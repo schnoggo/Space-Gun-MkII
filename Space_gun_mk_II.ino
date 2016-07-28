@@ -4,11 +4,6 @@
 // Libraries:
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h> // Neopixels. We're using GRB and Warm White
-
-
-
-
-
 #include "Adafruit_LEDBackpack.h" // for 14-segment displau (adafru.it/---)
 #include "Adafruit_GFX.h" // Adafruit's general Arduino graphics lib
 #include <Adafruit_MMA8451.h> // Adafruit accelerometer breakout
@@ -16,10 +11,27 @@
 
 // Set up the IO pins:
 #define NEO_PIXEL_DATA_PIN 3
+#define NEOPIXEL_WHITE_DATA_PIN 8
+#define TRIGGER_PIN 0
 
 // Other constants:
 #define LED_14_I2C_ADDR 0x70
+#define MODE_ADMIN 0
+#define MODE_PEW 1
+#define MODE_DEMO 8
 
+#define ANIM_DEMO 0
+#define ANIM_STANDBY 1
+#define ANIM_FIRE_QUICK 2
+#define ANIM_FIRE_LONG 3
+#define ANIM_FIRE_BLAST 4
+
+
+#define RING_START 0
+#define RING_END 23
+#define WHITE_START 24
+#define WHITE_END 25
+#define WHITE_ANIM_STEP_SIZE 8
 
 #ifdef __AVR__
   #include <avr/power.h>
@@ -27,7 +39,10 @@
 
 // Initialize some library objects:
 // Neopixels:
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(32, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END, NEOPIXEL_WHITE_DATA_PIN, NEO_GRB + NEO_KHZ800);
+
+ 
 // 14-segment LED:
 Adafruit_AlphaNum4 LED_14_seg = Adafruit_AlphaNum4();
 // accelerometer:
@@ -43,14 +58,42 @@ Adafruit_MMA8451 accelerometer = Adafruit_MMA8451();
 
 //Global vars:
 int trigger_reading;
-int last_trigger_reading;
+int last_trigger_reading = -1;
 
+uint8_t current_orientation= -99;
+uint8_t last_orientation = 0; // start with them different
+
+byte current_mode = 254;
+byte prev_mode = 0;
+
+byte ring_animation = ANIM_DEMO;
+
+
+unsigned long timer_14seg = 0;
+unsigned long timer_rings = 0;
+unsigned long timer_white = 0;
+byte acc;
+uint32_t c = 0;
+
+byte alpha_squence_index = '!';
+
+
+uint32_t white_range = (256*4)-1;
+int white_direction = WHITE_ANIM_STEP_SIZE;
+signed long white_anim_step = 0;
+uint8_t white_rgb[4]; // declared global so we're not constantly allocating this
+
+
+uint16_t ring_anim_step = 0;
+
+
+  
+  
 // Use the Adafruit Sensor Event library to normalize reading sensor inputs:
   sensors_event_t sensor_event; 
 
 
-uint8_t current_orientation= -99;
-uint8_t last_orientation = -99;
+
 
 
 
@@ -78,160 +121,26 @@ void setup() {
   
   // Setup 14-segment display:
    LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
-   /*
-   LED_14_seg.writeDigitRaw(3, 0x0);
-  LED_14_seg.writeDigitRaw(0, 0xFFFF);
-  LED_14_seg.writeDisplay();
-  delay(200);
-  LED_14_seg.writeDigitRaw(0, 0x0);
-  LED_14_seg.writeDigitRaw(1, 0xFFFF);
-  LED_14_seg.writeDisplay();
-  delay(200);
-  LED_14_seg.writeDigitRaw(1, 0x0);
-  LED_14_seg.writeDigitRaw(2, 0xFFFF);
-  LED_14_seg.writeDisplay();
-  delay(200);
-  LED_14_seg.writeDigitRaw(2, 0x0);
-  LED_14_seg.writeDigitRaw(3, 0xFFFF);
-  LED_14_seg.writeDisplay();
-  delay(200);
-  */
-  
-  LED_14_seg.clear();
-  LED_14_seg.writeDisplay();
-  /*
-   // display every character, 
-  for (uint8_t i='!'; i<='z'; i++) {
-    LED_14_seg.writeDigitAscii(0, i);
-    LED_14_seg.writeDigitAscii(1, i+1);
-    LED_14_seg.writeDigitAscii(2, i+2);
-    LED_14_seg.writeDigitAscii(3, i+3);
-    LED_14_seg.writeDisplay();
-    
-    safe_delay(300);
-  }
-  */
+
+
 
   
 }
 
 void loop() {
-  byte i;
-  for (i=1; i <= 1000; i++) { // channel 0 is the console - start with 1
+  UpdateMode();
 
-   safe_delay(300);
-  }
-
+// in the off chance no function is servicing he heartbeat:
   ServiceLights();
   ServiceSound();
   ServiceSensors();
-  // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
-//colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-  // Send a theater pixel chase in...
-  theaterChase(strip.Color(127, 127, 127), 50); // White
-  theaterChase(strip.Color(127, 0, 0), 50); // Red
-  theaterChase(strip.Color(0, 0, 127), 50); // Blue
-
-  rainbow(20);
-  rainbowCycle(20);
-  theaterChaseRainbow(50);
-}
-
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
-    safe_delay(wait);
-  }
-}
-
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) {
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
-    }
-    strip.show();
-    safe_delay(wait);
-  }
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    for(i=0; i< strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    safe_delay(wait);
-  }
-}
-
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-  for (int j=0; j<10; j++) {  //do 10 cycles of chasing
-    for (int q=0; q < 3; q++) {
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, c);    //turn every third pixel on
-      }
-      strip.show();
-
-      safe_delay(wait);
-
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, 0);        //turn every third pixel off
-      }
-    }
-  }
-}
-
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
-    for (int q=0; q < 3; q++) {
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-      }
-      strip.show();
-
-      safe_delay(wait);
-
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, 0);        //turn every third pixel off
-      }
-    }
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if(WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if(WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
-
-
+}  
 void ServiceSensors(){
 /*
   Update global sensor values
 */
 
-
+int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
 
     accelerometer.getEvent(&sensor_event);
 
@@ -279,6 +188,108 @@ void ServiceSensors(){
 }
 
 void ServiceLights(){
+  unsigned long now = millis();
+  byte neopixel_dirty = false;
+// Alphanumeric display:
+
+  if (timer_14seg < now){
+    if (alpha_squence_index == '!'){
+      //reset
+      LED_14_seg.clear();
+      LED_14_seg.writeDisplay();
+    } else {
+      LED_14_seg.writeDigitAscii(0, alpha_squence_index);
+      LED_14_seg.writeDigitAscii(1, alpha_squence_index+1);
+      // LED_14_seg.writeDigitAscii(2, i+2);
+      //  LED_14_seg.writeDigitAscii(3, i+3);
+      LED_14_seg.writeDisplay();
+    }
+    alpha_squence_index++;
+    if (alpha_squence_index >= 'z'){
+      alpha_squence_index = '!';
+    }
+    timer_14seg = millis()+300;
+  } // timer
+
+  
+    // NeoPixelRings:
+    //if (timer_rings < now){
+    if (false){
+      switch(ring_animation){
+        case ANIM_DEMO:
+          if (ring_anim_step > 255) {
+            ring_anim_step = 0;      
+          } else {
+            ring_anim_step++;
+          }
+          uint16_t i;
+          for(i=RING_START; i<=RING_END; i++) {
+            strip.setPixelColor(i, Wheel((i+ ring_anim_step ) & 255));
+          }
+          neopixel_dirty = true;
+          timer_rings = now +30;
+
+        break;
+        
+        case ANIM_STANDBY:
+        break;
+        
+        case ANIM_FIRE_LONG:
+        break;
+        
+        case ANIM_FIRE_BLAST:
+        break;
+      }
+    } // timer
+
+
+
+// White Pixels:
+  if (timer_white < now){
+
+      // spread possible values of 0 -768 across 3 pixels
+    for(byte i=0; i<3; i++) { // rgb
+      acc = white_anim_step/4;
+      byte d = white_anim_step%4;
+      if (i < d){
+        acc++;
+      }
+      white_rgb[i] = acc;
+     Serial.print(acc);
+      Serial.print("  ");
+    }
+     Serial.println();
+    
+  //  c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2], white_rgb[3]);
+   // c = strip.Color(white_anim_step/3,0,0);
+  // acc = white_anim_step%255;
+     c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2]);
+    strip.setPixelColor(WHITE_START , c);
+    strip.setPixelColor(WHITE_START -1 , c);
+    neopixel_dirty = true;
+ 
+  
+  
+    white_anim_step = white_anim_step + white_direction;
+    if (white_anim_step >= white_range){
+      white_anim_step = white_range;
+      white_direction = 0 - WHITE_ANIM_STEP_SIZE;
+    }
+    
+    if (white_anim_step <= 0){
+      white_anim_step = 0;
+      white_direction = WHITE_ANIM_STEP_SIZE;
+    }
+    Serial.println(white_anim_step);
+  timer_white = millis()+60;
+  } // timer
+
+
+
+
+if (neopixel_dirty){
+strip.show();
+}
 
 
 }
@@ -296,4 +307,69 @@ void safe_delay(unsigned long duration){
   }
 
 
+}
+
+void UpdateMode(){
+// Uses some globals
+// current_mode, prev_mode
+  if (current_mode != prev_mode){
+    switch(current_mode){
+      case MODE_ADMIN:
+      break;
+
+      case MODE_PEW:
+
+      break;
+
+
+      case MODE_DEMO:
+
+      break;
+
+  }
+  current_mode = prev_mode; // and set the current mode
+  }
+}
+  
+  
+  
+  // Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  int red;
+  int green;
+  int blue;
+  if(WheelPos < 85) {
+   // return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+   
+   green = 0;
+   blue = WheelPos * 3;
+   red = 255 - blue;
+   
+  } else {
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+   // return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+   red = 0;
+   green = WheelPos * 3;
+   blue = 255-green;
+   
+  } else {
+  WheelPos -= 170;
+  // return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  blue = 0;
+  red = WheelPos *3;
+  green = 255 - red;
+  }
+  
+  
+  }
+  
+  // adjust brightness:
+  red = red *.05;
+  green = green *.05;
+  blue = blue * .05;
+  return strip.Color(red, green, blue);
+  
 }
