@@ -4,8 +4,8 @@
 // switches:
 #define PRDBG
 #define USE_NEOPIXEL
-
-
+#define USE_SEG14
+#define USE_ACCEL
 
 
 // Libraries:
@@ -18,10 +18,16 @@
 #include <Adafruit_NeoPixel.h> // Neopixels. We're using GRB and Warm White
 #endif
 
-
+#ifdef USE_SEG14
 #include "Adafruit_LEDBackpack.h" // for 14-segment displau (adafru.it/---)
 #include "Adafruit_GFX.h" // Adafruit's general Arduino graphics lib
+#endif
+
+#ifdef USE_ACCEL
 #include <Adafruit_MMA8451.h> // Adafruit accelerometer breakout
+#endif
+
+
 #include "Adafruit_Soundboard.h" // Adafruit audio FX board
 
 
@@ -75,10 +81,15 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO
 // Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END, NEOPIXEL_WHITE_DATA_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
+#ifdef USE_SEG14
 // 14-segment LED:
 Adafruit_AlphaNum4 LED_14_seg = Adafruit_AlphaNum4();
+#endif
+
+#ifdef USE_ACCEL
 // accelerometer:
 Adafruit_MMA8451 accelerometer = Adafruit_MMA8451();
+#endif
 
 
 
@@ -134,9 +145,11 @@ uint16_t ring_anim_step = 0;
 
 
 void setup() {
+    #ifdef PRDBG
+      Serial.begin(9600);
+    #endif
 
-// setup accelerometer:
-    Serial.begin(9600);
+
 
 
 
@@ -145,26 +158,10 @@ void setup() {
     } else {
       dprint("SFX board found");
     }
-
-
-/*
-  dprintln("Adafruit MMA8451 test!");
-    if (! accelerometer.begin()) {
-    dprintln("Couldnt start");
- //   while (1);
-  }
-  dprintln("MMA8451 found!");
-  accelerometer.setRange(MMA8451_RANGE_2_G);
-//accelerometer.setRange(MMA8451_RANGE_4_G);
-//accelerometer.setRange(MMA8451_RANGE_8_G);
-
-
-
-NeoPixelSetup();
-
-  // Setup 14-segment display:
-   LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
-*/
+    // setup accelerometer:
+    InitAccel();
+      InitSeg14();
+      InitNeoPixels();
 
 /*
 digitalWrite(SFX_RST, LOW);
@@ -249,22 +246,7 @@ void ServiceLights(){
 // Alphanumeric display:
 
   if (timer_14seg < now){
-    if (alpha_squence_index == '!'){
-      //reset
-      LED_14_seg.clear();
-      LED_14_seg.writeDisplay();
-    } else {
-      LED_14_seg.writeDigitAscii(0, alpha_squence_index);
-      LED_14_seg.writeDigitAscii(1, alpha_squence_index+1);
-      // LED_14_seg.writeDigitAscii(2, i+2);
-      //  LED_14_seg.writeDigitAscii(3, i+3);
-      LED_14_seg.writeDisplay();
-    }
-    alpha_squence_index++;
-    if (alpha_squence_index >= 'z'){
-      alpha_squence_index = '!';
-    }
-    timer_14seg = millis()+300;
+    AnimateSeg14(now);
   } // timer
 
 
@@ -276,7 +258,6 @@ void ServiceLights(){
 
 
     // White Pixels:
-
   if (timer_white < now){
     neopixel_dirty = AnimateWhite(now) || neopixel_dirty;
   }
@@ -324,47 +305,6 @@ void UpdateMode(){
 }
 
 
-
-  // Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  int red;
-  int green;
-  int blue;
-  if(WheelPos < 85) {
-   // return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-
-   green = 0;
-   blue = WheelPos * 3;
-   red = 255 - blue;
-
-  } else {
-  if(WheelPos < 170) {
-    WheelPos -= 85;
-   // return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-   red = 0;
-   green = WheelPos * 3;
-   blue = 255-green;
-
-  } else {
-  WheelPos -= 170;
-  // return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  blue = 0;
-  red = WheelPos *3;
-  green = 255 - red;
-  }
-
-
-  }
-
-  // adjust brightness:
-  red = red *.05;
-  green = green *.05;
-  blue = blue * .05;
-  return strip.Color(red, green, blue);
-
-}
 
 
 // sfx.reset()

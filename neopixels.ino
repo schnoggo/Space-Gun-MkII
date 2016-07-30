@@ -1,7 +1,7 @@
 // neopixel initializations and animations
 //
 // animations use these globals:
-void NeoPixelSetup(){
+void InitNeoPixels(){
   // Setup Neopixels:
   #ifdef USE_NEOPIXEL
     strip.begin();
@@ -148,9 +148,9 @@ byte AnimateWhite(  unsigned long now){
     timer_white = millis()+200;
     } // timer
 */
-
+    #endif
     return neopixel_dirty;
-      #endif
+
 }
 void UpdateNeopixels(byte dirty){
   #ifdef USE_NEOPIXEL
@@ -159,3 +159,44 @@ void UpdateNeopixels(byte dirty){
     }
   #endif
 }
+
+
+  #ifdef USE_NEOPIXEL
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  int red;
+  int green;
+  int blue;
+  if(WheelPos < 85) {
+    // return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+    green = 0;
+    blue = WheelPos * 3;
+    red = 255 - blue;
+
+  } else {
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    // return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+    red = 0;
+    green = WheelPos * 3;
+    blue = 255-green;
+
+  } else {
+    WheelPos -= 170;
+    // return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+    blue = 0;
+    red = WheelPos *3;
+    green = 255 - red;
+  }
+  }
+
+  // adjust brightness:
+  red = red *.05;
+  green = green *.05;
+  blue = blue * .05;
+  return strip.Color(red, green, blue);
+
+}
+#endif
