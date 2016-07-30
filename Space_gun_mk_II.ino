@@ -2,7 +2,11 @@
 // Lon Koenig 2016
 
 // switches:
-//#define PRDBG
+#define PRDBG
+#define USE_NEOPIXEL
+
+
+
 
 // Libraries:
 #ifdef PRDBG
@@ -10,7 +14,11 @@
 #endif
 
 #include <SoftwareSerial.h>
+#ifdef USE_NEOPIXEL
 #include <Adafruit_NeoPixel.h> // Neopixels. We're using GRB and Warm White
+#endif
+
+
 #include "Adafruit_LEDBackpack.h" // for 14-segment displau (adafru.it/---)
 #include "Adafruit_GFX.h" // Adafruit's general Arduino graphics lib
 #include <Adafruit_MMA8451.h> // Adafruit accelerometer breakout
@@ -60,11 +68,12 @@
 #define WHITE_ANIM_STEP_SIZE 50
 
 
+#ifdef USE_NEOPIXEL
 // Initialize some library objects:
 // Neopixels:
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
 // Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END, NEOPIXEL_WHITE_DATA_PIN, NEO_GRB + NEO_KHZ800);
-
+#endif
 
 // 14-segment LED:
 Adafruit_AlphaNum4 LED_14_seg = Adafruit_AlphaNum4();
@@ -151,10 +160,7 @@ void setup() {
 
 
 
-
-  // Setup Neopixels:
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+NeoPixelSetup();
 
   // Setup 14-segment display:
    LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
@@ -264,139 +270,21 @@ void ServiceLights(){
 
     // NeoPixelRings:
     if (timer_rings < now){
-    //if (false){
-      switch(ring_animation){
-        case ANIM_DEMO:
-          if (ring_anim_step > 255) {
-            ring_anim_step = 0;
-          } else {
-            ring_anim_step++;
-          }
-          uint16_t i;
-          for(i=RING_START; i<=RING_END; i++) {
-            strip.setPixelColor(i, Wheel((i+ ring_anim_step ) & 255));
-          }
-          neopixel_dirty = true;
-          timer_rings = now +30;
-
-        break;
-
-        case ANIM_STANDBY:
-        break;
-
-        case ANIM_FIRE_LONG:
-        break;
-
-        case ANIM_FIRE_BLAST:
-        break;
-      }
+      neopixel_dirty = AnimateRings(now) || neopixel_dirty;
     } // timer
 
 
 
-// White Pixels:
+    // White Pixels:
 
-//  if (timer_white < now){
-if (false){
+  if (timer_white < now){
+    neopixel_dirty = AnimateWhite(now) || neopixel_dirty;
+  }
 
-
-/*
-0: 0,  0,  0,
-50: 13,  13,  12,
-100: 25,  25,  25,
-150: 38,  38,  37,
-200: 50,  50,  50,
-250: 63,  63,  62,
-300: 75,  75,  75,
-350: 88,  88,  87,
-400: 100,  100,  100,
-450: 113,  113,  112,
-500: 125,  125,  125,
-550: 138,  138,  137,
-600: 150,  150,  150,
-650: 163,  163,  162,
-700: 175,  175,  175,
-750: 188,  188,  187,
-800: 200,  200,  200,
-850: 213,  213,  212,
-900: 225,  225,  225,
-950: 238,  238,  237,
-1000: 250,  250,  250,
-1023: 0,  0,  0,
-973: 244,  243,  243,
-923: 231,  231,  231,
-873: 219,  218,  218,
-823: 206,  206,  206,
-773: 194,  193,  193,
-723: 181,  181,  181,
-673: 169,  168,  168,
-623: 156,  156,  156,
-573: 144,  143,  143,
-523: 131,  131,  131,
-473: 119,  118,  118,
-423: 106,  106,  106,
-373: 94,  93,  93,
-323: 81,  81,  81,
-273: 69,  68,  68,
-223: 56,  56,  56,
-173: 44,  43,  43,
-123: 31,  31,  31,
-73: 19,  18,  18,
-23: 6,  6,  6,
-1023: 0,  0,  0,
-973: 244,  243,  243,
-923: 231,  231,  231,
-873: 219,  218,  218,
-823: 206,  206,  206,
-*/
- dprint(white_anim_step);
-  dprint(": ");
-      // spread possible values of 0 -768 across 3 pixels
-    for(byte i=0; i<3; i++) { // rgb
-      acc = white_anim_step/4;
-      byte d = white_anim_step%4;
-      if (i < d){
-        acc++;
-        dprintln();
-      }
-      white_rgb[i] = acc;
-     dprint(acc);
-      dprint(",  ");
-    }
-
-  //  c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2], white_rgb[3]);
-   // c = strip.Color(white_anim_step/3,0,0);
-  // acc = white_anim_step%255;
-     c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2]);
-    strip.setPixelColor(WHITE_START , c);
-    //strip.setPixelColor(WHITE_START -1 , c);
-    neopixel_dirty = true;
-
-
-
-    white_anim_step = white_anim_step + white_direction;
-    if (white_anim_step >= white_range){
-      white_anim_step = white_range;
-      white_direction = 0 - WHITE_ANIM_STEP_SIZE;
-    }
-
-    if (white_anim_step <= 0){
-      white_anim_step = 0;
-      white_direction = WHITE_ANIM_STEP_SIZE;
-    }
-
-  timer_white = millis()+200;
-  } // timer
-
-
-
-
-if (neopixel_dirty){
-strip.show();
+  UpdateNeopixels(neopixel_dirty);
 }
 
 
-}
 void ServiceSound(){
 
 
