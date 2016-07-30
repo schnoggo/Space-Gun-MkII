@@ -3,9 +3,9 @@
 
 // switches:
 #define PRDBG
-#define USE_NEOPIXEL
-#define USE_SEG14
-#define USE_ACCEL
+ #define USE_NEOPIXEL
+ #define USE_SEG14
+ #define USE_ACCEL
 
 
 // Libraries:
@@ -14,6 +14,8 @@
 #endif
 
 #include <SoftwareSerial.h>
+#include "Adafruit_Soundboard.h" // Adafruit audio FX board
+
 #ifdef USE_NEOPIXEL
 #include <Adafruit_NeoPixel.h> // Neopixels. We're using GRB and Warm White
 #endif
@@ -28,10 +30,10 @@
 #endif
 
 
-#include "Adafruit_Soundboard.h" // Adafruit audio FX board
 
 
 
+// creape Serial.print macros:
 #ifdef PRDBG
 #define dprint(ccc) Serial.print(ccc);
 #define dprintln(ccc) Serial.println(ccc);
@@ -132,10 +134,10 @@ uint16_t ring_anim_step = 0;
 
 
 
-
+#ifdef USE_ACCEL
 // Use the Adafruit Sensor Event library to normalize reading sensor inputs:
   sensors_event_t sensor_event;
-
+#endif
 
 
 
@@ -151,7 +153,8 @@ void setup() {
 
 
 
-
+  ss.begin(9600);
+  delay(200);
 
     if (!sfx.reset()) {
       dprint("soundboard not found");
@@ -171,11 +174,10 @@ pinMode(SFX_RST, INPUT);
 delay(1000); // give a bit of time to 'boot up'
 
 */
-/*
+
   ListSFXFiles();
   sfx.playTrack(3);
 
-*/
 
 
 }
@@ -195,6 +197,7 @@ void ServiceSensors(){
 
 int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
 
+#ifdef USE_ACCEL
     accelerometer.getEvent(&sensor_event);
 
   /* Display the results (acceleration is measured in m/s^2) */
@@ -237,7 +240,7 @@ int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
   dprintln("m/s^2 ");
 
  */
-
+#endif
 }
 
 void ServiceLights(){
