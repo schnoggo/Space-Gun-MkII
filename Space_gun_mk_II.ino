@@ -31,7 +31,6 @@
 
 
 
-
 #define ANIM_DEMO 0
 #define ANIM_STANDBY 1
 #define ANIM_FIRE_QUICK 2
@@ -51,8 +50,23 @@
 int trigger_reading;
 int last_trigger_reading = -1;
 
-uint8_t current_orientation= -99;
-uint8_t last_orientation = 0; // start with them different
+uint8_t current_orientation = 99;
+uint8_t last_orientation = 100; // start with them different
+unsigned long last_orientation_change = 0;
+#define ORIENTATION_DEBOUNCE_TIME 30
+
+#define ORIENT_FORWARD 0
+#define ORIENT_GROUND  1
+#define ORIENT_TIP_OUT 2
+#define ORIENT_TIP_IN  3
+#define ORIENT_SKY     4
+#define ORIENT_INVERT  5
+#define ORIENT_GUNPLAY 6
+
+#define ACCEL_SAMPLE_RATE 1000
+
+
+
 
 byte current_mode = 254;
 byte prev_mode = 0;
@@ -109,53 +123,17 @@ void ServiceSensors(){
 /*
   Update global sensor values
 */
+// trigger:
 
 int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
 
-#ifdef USE_ACCEL
-    accelerometer.getEvent(&sensor_event);
 
-  /* Display the results (acceleration is measured in m/s^2) */
-//  dprint("X: \t"); dprint(sensor_event.acceleration.x); dprint("\t");
-//  dprint("Y: \t"); dprint(sensor_event.acceleration.y); dprint("\t");
-//  dprint("Z: \t"); dprint(sensor_event.acceleration.z); dprint("\t");
-
-   /* Get the orientation of the sensor */
-  current_orientation = accelerometer.getOrientation();
-/*
-  switch (o) {
-    case MMA8451_PL_PUF:
-      dprintln("Portrait Up Front");
-      break;
-    case MMA8451_PL_PUB:
-      dprintln("Portrait Up Back");
-      break;
-    case MMA8451_PL_PDF:
-      dprintln("Portrait Down Front");
-      break;
-    case MMA8451_PL_PDB:
-      dprintln("Portrait Down Back");
-      break;
-    case MMA8451_PL_LRF:
-      dprintln("Landscape Right Front");
-      break;
-    case MMA8451_PL_LRB:
-      dprintln("Landscape Right Back");
-      break;
-    case MMA8451_PL_LLF:
-      dprintln("Landscape Left Front");
-      break;
-    case MMA8451_PL_LLB:
-      dprintln("Landscape Left Back");
-      break;
-    }
-  dprintln();
-
-
-  dprintln("m/s^2 ");
-
- */
-#endif
+  boolean orientation_changed = UpdateAccelData();
+  /*
+  if (orientation_changed){
+    PrintOrientation();
+  }
+  */
 }
 
 void ServiceLights(){
