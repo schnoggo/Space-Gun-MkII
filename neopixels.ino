@@ -2,8 +2,12 @@
 //
 // animations use these globals:
 void InitNeoPixels(){
+// Global:
+// strip
   // Setup Neopixels:
   #ifdef USE_NEOPIXEL
+  strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
+
     strip.begin();
     strip.show(); // Initialize all pixels to 'off'
   #endif

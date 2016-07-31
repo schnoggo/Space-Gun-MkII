@@ -2,7 +2,10 @@
 
 
 void InitAccel(){
+// uses global: accelerometer
   #ifdef USE_ACCEL
+  accelerometer = Adafruit_MMA8451();
+
   dprintln("Adafruit MMA8451 test!");
   if (! accelerometer.begin()) {
     dprintln("Couldnt start");

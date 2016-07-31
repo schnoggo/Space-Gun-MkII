@@ -2,9 +2,11 @@
 
 
 void InitSeg14(){
+// uses global: LED_14_seg
 #ifdef  USE_SEG14
 // Setup 14-segment display:
- LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
+  LED_14_seg = Adafruit_AlphaNum4();
+  LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
 
 #endif
 }
@@ -15,6 +17,7 @@ void AnimateSeg14(unsigned long now){
   demo:
   globals:
   alpha_squence_index - current character
+  timer_14seg
 
 
   */
