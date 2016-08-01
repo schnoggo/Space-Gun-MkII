@@ -126,17 +126,6 @@ void PrintOrientation(){
      dprint(": ");
   switch (current_orientation) {
   
-  
-  #define ORIENT_FORWARD 0
-#define ORIENT_GROUND  1
-#define ORIENT_TIP_OUT 2
-#define ORIENT_TIP_IN  3
-#define ORIENT_SKY     4
-#define ORIENT_INVERT  5
-#define ORIENT_GUNPLAY 6
-
-
-
     case ORIENT_FORWARD:
       dprintln("Forward");
       break;

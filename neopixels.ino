@@ -13,6 +13,66 @@ void InitNeoPixels(){
   #endif
 }
 
+void StartRingAnimation(byte anim_num){
+// locals:
+  int red;
+  int green;
+  int blue;
+  
+// stop any existing animations 
+
+
+// start the new animation
+switch (current_mode) {
+  case MODE_DEMO:
+      ring_animation = ANIM_DEMO;
+      
+       /*     
+        #define ORIENT_FORWARD 0
+      #define ORIENT_GROUND  1
+      #define ORIENT_TIP_OUT 2
+      #define ORIENT_TIP_IN  3
+      #define ORIENT_SKY     4
+      #define ORIENT_INVERT  5
+      #define ORIENT_GUNPLAY 6
+      */
+    switch (current_orientation){
+      case ORIENT_FORWARD:
+        red = 255; green = 20; blue = 0;
+        break;
+        
+      case ORIENT_SKY:
+        red = 90 ; green = 00; blue = 255;
+        break;
+        
+      case ORIENT_GROUND:
+        red = 00 ; green = 255; blue = 20;
+      break;
+  
+      default:
+         red = 20 ; green = 20; blue = 20;
+    
+    }
+
+      ring_anim_color = strip.Color(red, green, blue);
+  break;
+  
+  
+  default:
+
+   ring_animation = ANIM_STANDBY;
+
+
+
+
+
+
+  }
+}
+
+
+
+
 byte AnimateRings(  unsigned long now){
   /*
   Globals:
@@ -27,7 +87,7 @@ byte AnimateRings(  unsigned long now){
 
       #ifdef USE_NEOPIXEL
   switch(ring_animation){
-    case ANIM_DEMO:
+    case ANIM_STANDBY:
       if (ring_anim_step > 255) {
         ring_anim_step = 0;
       } else {
@@ -42,8 +102,13 @@ byte AnimateRings(  unsigned long now){
 
     break;
 
-    case ANIM_STANDBY:
+    case ANIM_DEMO:
+      NeoWipe(ring_anim_color, 0);
+      neopixel_dirty = true;
+      timer_rings = now +3000;
+      
     break;
+
 
     case ANIM_FIRE_LONG:
     break;
@@ -204,3 +269,18 @@ uint32_t Wheel(byte WheelPos) {
 
 }
 #endif
+
+
+// Fill the dots one after the other with a color
+void NeoWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+      strip.setPixelColor(i, c);
+      if ( 0 != wait ){
+        strip.show();
+        safe_delay(wait);
+      }
+  }
+  if (0 == wait){
+ //   strip.show();
+  }
+}

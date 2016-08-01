@@ -69,9 +69,11 @@ unsigned long last_orientation_change = 0;
 
 
 
-byte current_mode = 254;
+byte current_mode = MODE_DEMO;
 byte prev_mode = 0;
 
+
+// combine the timers and current playing animation (and frame counter) into struct at some point
 byte ring_animation = ANIM_DEMO;
 
 
@@ -82,7 +84,7 @@ unsigned long timer_audioFX = 0;
 
 uint8_t acc; // generic 8-bit global to avoid memory thrashing
 uint32_t c = 0;
-
+uint32_t ring_anim_color=0;
 byte alpha_squence_index = '!';
 
 
@@ -133,6 +135,7 @@ int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
   
   if (orientation_changed){
     PrintOrientation();
+    StartRingAnimation(ANIM_DEMO);
   }
   
 }
@@ -200,7 +203,7 @@ void UpdateMode(){
       break;
 
   }
-  current_mode = prev_mode; // and set the current mode
+ prev_mode =   current_mode; // and set the current mode
   }
 }
 
