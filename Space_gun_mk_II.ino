@@ -53,7 +53,7 @@ int last_trigger_reading = -1;
 uint8_t current_orientation = 99;
 uint8_t last_orientation = 100; // start with them different
 unsigned long last_orientation_change = 0;
-#define ORIENTATION_DEBOUNCE_TIME 30
+#define ORIENTATION_DEBOUNCE_TIME 200
 
 #define ORIENT_FORWARD 0
 #define ORIENT_GROUND  1
@@ -62,6 +62,7 @@ unsigned long last_orientation_change = 0;
 #define ORIENT_SKY     4
 #define ORIENT_INVERT  5
 #define ORIENT_GUNPLAY 6
+#define ORIENT_BOUNDARY 7
 
 #define ACCEL_SAMPLE_RATE 1000
 
@@ -129,11 +130,11 @@ int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
 
 
   boolean orientation_changed = UpdateAccelData();
-  /*
+  
   if (orientation_changed){
     PrintOrientation();
   }
-  */
+  
 }
 
 void ServiceLights(){

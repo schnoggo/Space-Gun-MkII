@@ -41,47 +41,79 @@ boolean UpdateAccelData(){
 //   last_orientation_change
 
 
-
-
-/*
-#define ORIENT_FORWARD 0
-#define ORIENT_GROUND  1
-#define ORIENT_TIP_OUT 2
-#define ORIENT_TIP_IN  3
-#define ORIENT_SKY     4
-#define ORIENT_INVERT  5
-#define ORIENT_GUNPLAY 6
-*/
-
-
   boolean retVal = false;
-  unsigned long now = millis(); 
   #ifdef USE_ACCEL
+  unsigned long now = millis(); 
+// figue out a throttling mechanism.... maybe?
   
-  if ( (now - last_orientation_change ) > ACCEL_SAMPLE_RATE){
-  
-  
+  float xV = sensor_event.acceleration.x;
+  float yV = sensor_event.acceleration.y;
+  float zV = sensor_event.acceleration.z;
   
   // Tell the library to query the accelerometer
   accelerometer.getEvent(&sensor_event);
-  dprint("X: \t"); dprint(sensor_event.acceleration.x); dprint("  ");
-  dprint("Y: \t"); dprint(sensor_event.acceleration.y); dprint("  ");
-  dprint("Z: \t"); dprintln(sensor_event.acceleration.z); dprint("  ");
-  last_orientation_change =  now;
+  /*
+  dprint("X: \t"); dprint(xV); dprint("  ");
+  dprint("Y: \t"); dprint(yV); dprint("  ");
+  dprint("Z: \t"); dprintln(zV); dprint("  ");
+ */
   
-  }
+  
+  
 /*
+	X	Y	Z
+TIP_OUT	-2< x < +2	-6 < y < 5	z<-6
+TIP_IN	-2< x < +2	-6 < y < 5	6<z
+INVERT	-2< x < +2	7 < y	   -6 < z < 6
 
-  uint8_t new_orientation = accelerometer.getOrientation();
-  if ( current_orientation != new_orientation){
-    if ( (now - last_orientation_change ) > ORIENTATION_DEBOUNCE_TIME){
-      last_orientation = current_orientation;
-      current_orientation = new_orientation;
-      last_orientation_change = now;
-      retVal = true;
+FORWARD	-2< x < +2	y < -7	 -6 < z < 6
+GROUND	6 < x	      y < -7	 -6 < z < 6
+SKY	    x<-6        y < -7	 -6 < z < 6
+
+*/
+uint8_t return_orientation = ORIENT_BOUNDARY;
+if (zV > -6) {
+  if (zV < 6){
+    if (yV >7){ // probably inverted
+       if ( (xV > -2) && (xV < 2)){
+        return_orientation = ORIENT_INVERT;
+       }
+    } else {
+      if (xV < -6){ return_orientation = ORIENT_SKY; }
+      if (xV > 6 ){ return_orientation = ORIENT_GROUND; }
+      if ( (xV > -2) && (xV < 2)){
+        return_orientation = ORIENT_FORWARD;
+      }
+    }
+  } else {
+  // only case where z> 6
+    if ( (xV > -2) && (xV < 2)){
+      return_orientation = ORIENT_TIP_IN;
     }
   }
-*/
+
+} else {
+  // only one case where z < -6
+  if ( (xV > -2) && (xV < 2)){
+    return_orientation = ORIENT_TIP_OUT;
+  }
+    
+}
+  if (current_orientation != return_orientation) { // only need to update is position changed
+    if (ORIENT_BOUNDARY != return_orientation){ // don't change if in boundary zones
+      if ( (now - last_orientation_change ) > ORIENTATION_DEBOUNCE_TIME){ //don't report transient changes - this might change for "GUNPLAY" result
+        if ( current_orientation != return_orientation){
+          if ( (now - last_orientation_change ) > ORIENTATION_DEBOUNCE_TIME){
+            last_orientation = current_orientation;
+            current_orientation = return_orientation;
+            last_orientation_change = now;
+            retVal = true;
+          }
+        }
+      }
+    }
+  }
+
   #endif
   return retVal;
 }
@@ -89,36 +121,45 @@ boolean UpdateAccelData(){
 
 void PrintOrientation(){
   #ifdef USE_ACCEL
-  /*
+
      dprint(current_orientation);
      dprint(": ");
   switch (current_orientation) {
-    case MMA8451_PL_PUF:
-      dprintln("Portrait Up Front");
+  
+  
+  #define ORIENT_FORWARD 0
+#define ORIENT_GROUND  1
+#define ORIENT_TIP_OUT 2
+#define ORIENT_TIP_IN  3
+#define ORIENT_SKY     4
+#define ORIENT_INVERT  5
+#define ORIENT_GUNPLAY 6
+
+
+
+    case ORIENT_FORWARD:
+      dprintln("Forward");
       break;
-    case MMA8451_PL_PUB:
-      dprintln("Portrait Up Back");
+    case ORIENT_GROUND:
+      dprintln("Ground");
       break;
-    case MMA8451_PL_PDF:
-      dprintln("Portrait Down Front");
+    case ORIENT_TIP_OUT:
+      dprintln("Roll Out");
       break;
-    case MMA8451_PL_PDB:
-      dprintln("Portrait Down Back");
+    case ORIENT_TIP_IN:
+      dprintln("Roll In");
       break;
-    case MMA8451_PL_LRF:
-      dprintln("Landscape Right Front");
+    case ORIENT_SKY:
+      dprintln("Sky");
       break;
-    case MMA8451_PL_LRB:
-      dprintln("Landscape Right Back");
+    case ORIENT_INVERT:
+      dprintln("Invert");
       break;
-    case MMA8451_PL_LLF:
-      dprintln("Landscape Left Front");
-      break;
-    case MMA8451_PL_LLB:
-      dprintln("Landscape Left Back");
+    case ORIENT_GUNPLAY:
+      dprintln("Waving");
       break;
     }
-*/
+
 #endif
 
 
