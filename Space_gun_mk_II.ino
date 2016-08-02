@@ -45,6 +45,12 @@
 #define WHITE_ANIM_STEP_SIZE 50
 
 
+#define ANIM14_DEMO 0
+#define ANIM14_RAND 1
+#define ANIM14_NUM  2
+#define ANIM14_MSG  3
+#define ANIM14_SPIN 4
+#define ANIM14_MARQUEE  5
 
 //Global vars:
 int trigger_reading;
@@ -108,6 +114,10 @@ uint8_t white_rgb[4]; // declared global so we're not constantly allocating this
 
 uint16_t ring_anim_step = 0;
 
+
+
+// 14-segment stuff:
+uint8_t seg14_anim = ANIM14_DEMO;
 // for some reson, couldn't just declare these in shared.h, so assigning here:
 SoftwareSerial  ss = SoftwareSerial(SFX_TX, SFX_RX);
 Adafruit_Soundboard  sfx = Adafruit_Soundboard(&ss, NULL, SFX_RST);
@@ -157,6 +167,12 @@ void ServiceSensors(){
   if (orientation_changed){
     PrintOrientation();
     StartRingAnimation(ANIM_DEMO);
+    if (ORIENT_FORWARD == current_orientation) {
+      StartSeg14Animation(ANIM14_RAND);
+    } else {
+      StartSeg14Animation(ANIM14_DEMO);
+    }
+
   }
 
 }
