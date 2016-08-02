@@ -8,10 +8,7 @@
 #define USE_AUDIOFX
 
 // Libraries:
-#ifdef PRDBG
 #include <Wire.h>
-#endif
-
 
 
 // Neopixels:
@@ -20,6 +17,11 @@
 Adafruit_NeoPixel strip; // declare our global NeoPixel object
 // Adafruit_NeoPixel strip = Adafruit_NeoPixel(WHITE_END, NEOPIXEL_WHITE_DATA_PIN, NEO_GRB + NEO_KHZ800);
 #endif
+// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
+// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
+// and minimize distance between Arduino and first pixel.  Avoid connecting
+// on a live circuit...if you must, connect GND first.
+
 
 // 14-segment LED:
 #ifdef USE_SEG14
@@ -32,19 +34,10 @@ Adafruit_AlphaNum4 LED_14_seg; // declare our global AlphaNum4 object
 #include <Adafruit_MMA8451.h> // Adafruit accelerometer breakout
 #endif
 
-
-
 #ifdef USE_ACCEL
 // accelerometer:
 Adafruit_MMA8451 accelerometer; // declare our global MMA8451 (accelerometer) object
 sensors_event_t sensor_event; // declare our globalsensor event object
-#endif
-
-
-
-#ifdef USE_ACCEL
-// Use the Adafruit Sensor Event library to normalize reading sensor inputs:
-  
 #endif
 
 
@@ -58,10 +51,12 @@ sensors_event_t sensor_event; // declare our globalsensor event object
   
 
 
-// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
-// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
-// and minimize distance between Arduino and first pixel.  Avoid connecting
-// on a live circuit...if you must, connect GND first.
+// timer objects for animations:
+typedef struct {
+  unsigned int frame; // current "frame" of animation sequence
+  unsigned long next_frame_time; // time of next update time
+  uint8_t active; // whether this animation is active
+} AnimTimer;
 
 
 

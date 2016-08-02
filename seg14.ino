@@ -7,6 +7,8 @@ void InitSeg14(){
 // Setup 14-segment display:
   LED_14_seg = Adafruit_AlphaNum4();
   LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
+  ClearTimer(SEG14);
+
 
 #endif
 }
@@ -17,12 +19,11 @@ void AnimateSeg14(unsigned long now){
   demo:
   globals:
   alpha_squence_index - current character
-  timer_14seg
-
+  anim_timers
 
   */
 #ifdef  USE_SEG14
-
+    if (TimerUp(SEG14, now)){
     if (alpha_squence_index == '!'){
       //reset
       LED_14_seg.clear();
@@ -37,7 +38,7 @@ void AnimateSeg14(unsigned long now){
       alpha_squence_index = '!';
     }
 
-      timer_14seg = millis()+300;
-
+     SetTimer( SEG14, 150);
+    }
   #endif
 }

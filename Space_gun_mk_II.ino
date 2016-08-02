@@ -78,13 +78,20 @@ byte prev_mode = 0;
 byte ring_animation = ANIM_DEMO;
 
 
-unsigned long timer_14seg = 0;
 unsigned long timer_rings = 0;
 unsigned long timer_white = 0;
 unsigned long timer_audioFX = 0;
+// set up timers:
+#define SEG14 0
+#define RINGS 1
+#define WHITE_PIX 2
+#define AUDIO 3
+AnimTimer anim_timers[4];
+
+
 
 uint8_t acc; // generic 8-bit global to avoid memory thrashing
-uint32_t c = 0;
+uint32_t c = 0; // generic global color
 uint32_t ring_anim_color=0;
 byte alpha_squence_index = '!';
 
@@ -147,9 +154,9 @@ void ServiceLights(){
   
   
   // Alphanumeric display:
-  if (timer_14seg < now){
+
     AnimateSeg14(now);
-  } // timer
+
 
 
   // NeoPixelRings:
