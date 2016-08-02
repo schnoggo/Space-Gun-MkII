@@ -16,29 +16,40 @@ void InitAudioFX(){
       dprint("soundboard not found");
     } else {
       dprint("SFX board found");
-      
+
     ListSFXFiles();
-  sfx.playTrack(3);  
-      
-      
+  sfx.playTrack(1);
+
+
     }
   }
 
-  
-  
+void StartAudioFX(byte anim_num){
+  sfx.playTrack(anim_num);
+
+}
+
+
+
+void StopAudioFX(){
+  //   sfx.stop();
+
+    }
+
+
 void AnimateAudioFX(unsigned long now){
   // globals
   // timer_audioFX = millis()+300;
   // acc
-  acc = random(50);
-  if (acc < 17){
-    sfx.playTrack(acc);
+  acc = random(10);
+  if (acc < 3){
+    sfx.playTrack(acc +1 );
   }
-    timer_audioFX = now+4000; // check back in 4 seconds
+    timer_audioFX = now+2000; // check back in 2 seconds
 
 }
-  
-  
+
+
 // Assorted notes on the audio board:
 
 
@@ -60,4 +71,3 @@ if (! (v = sfx.volUp()) ) {
 */
 
 // if (! (v=sfx.volDown()) ) {
-

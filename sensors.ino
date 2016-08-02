@@ -2,7 +2,7 @@
 
 
 void InitAccel(){
-// globals: 
+// globals:
 //   accelerometer
 //   sensor_event
   #ifdef USE_ACCEL
@@ -48,14 +48,14 @@ boolean UpdateAccelData(){
 
   boolean retVal = false;
   #ifdef USE_ACCEL
-  unsigned long now = millis(); 
+  unsigned long now = millis();
   // throttle readings:
   if (last_accel_reading + ACCEL_SAMPLE_RATE < now){
-  
+
     float xV = sensor_event.acceleration.x;
     float yV = sensor_event.acceleration.y;
     float zV = sensor_event.acceleration.z;
-  
+
     // Tell the library to query the accelerometer
     accelerometer.getEvent(&sensor_event);
     /*
@@ -63,9 +63,9 @@ boolean UpdateAccelData(){
     dprint("Y: \t"); dprint(yV); dprint("  ");
     dprint("Z: \t"); dprintln(zV); dprint("  ");
    */
-  
-  
-  
+
+
+
   /*
     X	Y	Z
   TIP_OUT	-2< x < +2	-6 < y < 5	z<-6
@@ -103,14 +103,14 @@ boolean UpdateAccelData(){
     if ( (xV > -2) && (xV < 2)){
       return_orientation = ORIENT_TIP_OUT;
     }
-    
+
   }
-  
+
   // at this point, return_orientation is our interpretation fo the current readings.
   // Now, deboounce that and return a sensible result to the caller
   RecordOrientation(return_orientation);
   return_orientation = GetDebouncedOrientation();
-    if (ORIENT_BOUNDARY != return_orientation){ // don't change if in boundary zones    
+    if (ORIENT_BOUNDARY != return_orientation){ // don't change if in boundary zones
       if (current_orientation != return_orientation) { // only need to update if position changed
         last_orientation = current_orientation;
         current_orientation = return_orientation;
@@ -148,7 +148,7 @@ uint8_t retVal = ORIENT_BOUNDARY;
       for(i=0; i < POSSIBLE_ORIENTATIONS; i++) {
         orientation_counts[i] = 0;
       }
-      
+
       // count the orientations & find a winner:
       for(i=0; i < ORIENT_HISTORY_SIZE - 1; i++) {
         orientation_counts[orientation_history[i]]++;
@@ -171,7 +171,7 @@ void PrintOrientation(){
      dprint(current_orientation);
      dprint(": ");
   switch (current_orientation) {
-  
+
     case ORIENT_FORWARD:
       dprintln("Forward");
       break;
@@ -197,5 +197,39 @@ void PrintOrientation(){
 
 #endif
 
+
+}
+
+
+void InitTrigger(){
+  trigger_reading = 0;
+  last_trigger_reading = -1;
+  trigger_value =  0;
+
+}
+
+boolean UpdateTriggerState(){
+  boolean retVal = false;
+  unsigned long now = millis();
+  // maybe add a throttle?
+  if (trigger_timer < now ){
+
+    int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
+     // dprintln(temp_trigger);
+
+    temp_trigger = temp_trigger/(TRIGGER_RANGE);
+    if (temp_trigger !=  trigger_reading){
+
+      trigger_reading = temp_trigger;
+      retVal =  true;
+    }
+    trigger_timer =  now + TRIGGER_SAMPLE_RATE;
+  }
+  // globals:
+  // int trigger_reading;
+  // int last_trigger_reading = -1;
+  // uint8_t trigger_value
+
+  return retVal;
 
 }

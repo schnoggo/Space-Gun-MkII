@@ -26,7 +26,7 @@
 #define MODE_DEMO      8
 #define MODE_DIAMOND   4
 #define MODE_LON01     1
-#define MODE_NRG_BLADE 5	
+#define MODE_NRG_BLADE 5
 
 
 
@@ -49,6 +49,11 @@
 //Global vars:
 int trigger_reading;
 int last_trigger_reading = -1;
+uint8_t trigger_value = 0;
+unsigned long trigger_timer = 0;
+
+#define TRIGGER_SAMPLE_RATE 20
+#define TRIGGER_RANGE 1024/3
 
 uint8_t current_orientation = 99;
 uint8_t last_orientation = 100; // start with them different
@@ -111,7 +116,7 @@ void setup() {
     #ifdef PRDBG
       Serial.begin(9600);
     #endif
-    
+
     randomSeed(analogRead(2)); // Pin 2 should be floating
     InitAudioFX(); // set up sound board and serial
     InitAccel(); // set up accelerometer:
@@ -133,25 +138,34 @@ void ServiceSensors(){
 /*
   Update global sensor values
 */
+
+
 // trigger:
-
-int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
-
+  boolean trigger_change = UpdateTriggerState();
+  if (trigger_change){
+    dprint("trigger: ");
+    dprintln(trigger_reading);
+    if (2 == trigger_reading){
+      StartAudioFX(4);
+    } else {
+      StopAudioFX();
+    }
+}
 
   boolean orientation_changed = UpdateAccelData();
-  
+
   if (orientation_changed){
     PrintOrientation();
     StartRingAnimation(ANIM_DEMO);
   }
-  
+
 }
 
 void ServiceLights(){
   unsigned long now = millis();
   byte neopixel_dirty = false; // Don't update NeoPixel string unless we have to
-  
-  
+
+
   // Alphanumeric display:
     AnimateSeg14(now);
 
@@ -210,6 +224,3 @@ void UpdateMode(){
  prev_mode =   current_mode; // and set the current mode
   }
 }
-
-
-
