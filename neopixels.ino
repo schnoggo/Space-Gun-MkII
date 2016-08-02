@@ -42,15 +42,24 @@ switch (current_mode) {
         break;
         
       case ORIENT_SKY:
-        red = 90 ; green = 00; blue = 255;
+        red = 00 ; green = 00; blue = 255;
         break;
         
       case ORIENT_GROUND:
         red = 00 ; green = 255; blue = 20;
       break;
-  
+
+      case ORIENT_TIP_IN:
+        red = 30 ; green = 30; blue = 00;
+      break;
+      
+      case ORIENT_TIP_OUT:
+        red = 00 ; green = 30; blue = 30;
+      break;
+      
+      
       default:
-         red = 20 ; green = 20; blue = 20;
+         red = 10 ; green = 10; blue = 10;
     
     }
 
