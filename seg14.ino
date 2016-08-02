@@ -9,7 +9,6 @@ void InitSeg14(){
   LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
   ClearTimer(SEG14);
 
-
 #endif
 }
 

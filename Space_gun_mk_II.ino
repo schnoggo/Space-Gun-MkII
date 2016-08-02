@@ -78,7 +78,6 @@ byte prev_mode = 0;
 byte ring_animation = ANIM_DEMO;
 
 
-unsigned long timer_rings = 0;
 unsigned long timer_white = 0;
 unsigned long timer_audioFX = 0;
 // set up timers:
@@ -154,15 +153,12 @@ void ServiceLights(){
   
   
   // Alphanumeric display:
-
     AnimateSeg14(now);
 
 
 
   // NeoPixelRings:
-  if (timer_rings < now){
     neopixel_dirty = AnimateRings(now) || neopixel_dirty;
-  } // timer
 
 
   // White NeoPixels:

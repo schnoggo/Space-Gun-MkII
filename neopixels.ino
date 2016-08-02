@@ -7,9 +7,8 @@ void InitNeoPixels(){
   // Setup Neopixels:
   #ifdef USE_NEOPIXEL
   strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
-
-    strip.begin();
-    strip.show(); // Initialize all pixels to 'off'
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
   #endif
 }
 
@@ -62,13 +61,8 @@ switch (current_mode) {
   default:
 
    ring_animation = ANIM_STANDBY;
-
-
-
-
-
-
   }
+   ClearTimer(RINGS);
 }
 
 
@@ -84,40 +78,43 @@ byte AnimateRings(  unsigned long now){
     Return neopixel_dirty - neopixels have changed
       false - no changes made to neopixels
   */
-    byte neopixel_dirty = false;
+  byte neopixel_dirty = false;
 
-      #ifdef USE_NEOPIXEL
-  switch(ring_animation){
-    case ANIM_STANDBY:
-      if (ring_anim_step > 255) {
-        ring_anim_step = 0;
-      } else {
-        ring_anim_step++;
+  #ifdef USE_NEOPIXEL
+    
+    if (TimerUp(RINGS, now)){
+
+      switch(ring_animation){
+        case ANIM_STANDBY:
+          if (ring_anim_step > 255) {
+          ring_anim_step = 0;
+          } else {
+          ring_anim_step++;
+          }
+          uint16_t i;
+          for(i=RING_START; i<=RING_END; i++) {
+          strip.setPixelColor(i, Wheel((i+ ring_anim_step ) & 255));
+          }
+          neopixel_dirty = true;
+        break;
+
+        case ANIM_DEMO:
+          NeoWipe(ring_anim_color, 0);
+          neopixel_dirty = true;
+          SetTimer( RINGS, 3000);
+
+        break;
+
+
+        case ANIM_FIRE_LONG:
+        break;
+
+        case ANIM_FIRE_BLAST:
+        break;
       }
-      uint16_t i;
-      for(i=RING_START; i<=RING_END; i++) {
-        strip.setPixelColor(i, Wheel((i+ ring_anim_step ) & 255));
-      }
-      neopixel_dirty = true;
-      timer_rings = now +30;
 
-    break;
-
-    case ANIM_DEMO:
-      NeoWipe(ring_anim_color, 0);
-      neopixel_dirty = true;
-      timer_rings = now +3000;
-      
-    break;
-
-
-    case ANIM_FIRE_LONG:
-    break;
-
-    case ANIM_FIRE_BLAST:
-    break;
-  }
-  return neopixel_dirty;
+    }
+    return neopixel_dirty;
     #endif
 
 }
@@ -222,6 +219,8 @@ byte AnimateWhite(  unsigned long now){
     return neopixel_dirty;
 
 }
+
+
 void UpdateNeopixels(byte dirty){
   #ifdef USE_NEOPIXEL
     if(dirty){
