@@ -53,7 +53,12 @@ int last_trigger_reading = -1;
 uint8_t current_orientation = 99;
 uint8_t last_orientation = 100; // start with them different
 unsigned long last_orientation_change = 0;
-#define ORIENTATION_DEBOUNCE_TIME 200
+#define ORIENTATION_DEBOUNCE_TIME 120
+
+// switch from timer debounce to "most common" result.
+// the ORIENTATION_DEBOUNCE_TIME will be the window of samples
+// and we'll take the most frequesnt result.
+// this means an array of orientation results. Might get into a tight RAM situation
 
 #define ORIENT_FORWARD 0
 #define ORIENT_GROUND  1
@@ -65,8 +70,10 @@ unsigned long last_orientation_change = 0;
 #define ORIENT_BOUNDARY 7
 
 #define ACCEL_SAMPLE_RATE 1000
-
-
+#define ORIENT_HISTORY_SIZE 10
+uint8_t orientation_history[10];
+#define POSSIBLE_ORIENTATIONS 8
+uint8_t orientation_counts[POSSIBLE_ORIENTATIONS];
 
 
 byte current_mode = MODE_DEMO;
@@ -134,7 +141,7 @@ int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
   boolean orientation_changed = UpdateAccelData();
   
   if (orientation_changed){
-    PrintOrientation();
+    //PrintOrientation();
     StartRingAnimation(ANIM_DEMO);
   }
   

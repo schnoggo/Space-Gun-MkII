@@ -25,6 +25,7 @@ void StartRingAnimation(byte anim_num){
 // start the new animation
 switch (current_mode) {
   case MODE_DEMO:
+    // for now, don't check for anim type - just set it to demo
       ring_animation = ANIM_DEMO;
       
        /*     

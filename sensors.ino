@@ -18,6 +18,10 @@ void InitAccel(){
   //accelerometer.setRange(MMA8451_RANGE_4_G);
   //accelerometer.setRange(MMA8451_RANGE_8_G);
 
+// clear the history (used for debounce)
+      for(uint8_t i=0; i<ORIENT_HISTORY_SIZE; i++) {
+        orientation_history[i] = ORIENT_BOUNDARY;
+      }
 
 
 
@@ -108,6 +112,7 @@ if (zV > -6) {
             current_orientation = return_orientation;
             last_orientation_change = now;
             retVal = true;
+            RecordOrientation(return_orientation);
           }
         }
       }
@@ -118,6 +123,46 @@ if (zV > -6) {
   return retVal;
 }
 
+void RecordOrientation(uint8_t new_o){
+// add this new orientation to the history buffer:
+// not using a pointer and wrapping logic, just shifting the buffer:
+uint8_t i;
+      for(i=0; i < ORIENT_HISTORY_SIZE - 1; i++) {
+        orientation_history[i] =  orientation_history[i+1];
+      }
+    orientation_history[ORIENT_HISTORY_SIZE - 1] = new_o;
+
+}
+
+uint8_t GetDebouncedOrientation(){
+
+// returns the most seen orientation in the last  ORIENT_HISTORY_SIZE samples
+//
+// clear the counts:
+uint8_t i;
+uint8_t winning_slot = 254;
+uint8_t winning_value = 0;
+uint8_t retVal = ORIENT_BOUNDARY;
+      // clear the counts:
+      for(i=0; i < POSSIBLE_ORIENTATIONS; i++) {
+        orientation_counts[i] = 0;
+      }
+      
+      // count the orientations & find a winner:
+      for(i=0; i < ORIENT_HISTORY_SIZE - 1; i++) {
+        orientation_counts[orientation_history[i]]++;
+        if (orientation_counts[orientation_history[i]] > winning_value){
+          winning_slot = i;
+          winning_value = orientation_counts[orientation_history[i]];
+        }
+      }
+
+  if (winning_value > 0){
+    retVal = orientation_history[winning_slot];
+  }
+  return retVal;
+
+}
 
 void PrintOrientation(){
   #ifdef USE_ACCEL
