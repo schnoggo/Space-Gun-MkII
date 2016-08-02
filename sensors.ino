@@ -43,82 +43,83 @@ boolean UpdateAccelData(){
 //   current_orientation
 //   last_orientation
 //   last_orientation_change
+// last_accel_reading
 
 
   boolean retVal = false;
   #ifdef USE_ACCEL
   unsigned long now = millis(); 
-// figue out a throttling mechanism.... maybe?
+  // throttle readings:
+  if (last_accel_reading + ACCEL_SAMPLE_RATE < now){
   
-  float xV = sensor_event.acceleration.x;
-  float yV = sensor_event.acceleration.y;
-  float zV = sensor_event.acceleration.z;
+    float xV = sensor_event.acceleration.x;
+    float yV = sensor_event.acceleration.y;
+    float zV = sensor_event.acceleration.z;
   
-  // Tell the library to query the accelerometer
-  accelerometer.getEvent(&sensor_event);
+    // Tell the library to query the accelerometer
+    accelerometer.getEvent(&sensor_event);
+    /*
+    dprint("X: \t"); dprint(xV); dprint("  ");
+    dprint("Y: \t"); dprint(yV); dprint("  ");
+    dprint("Z: \t"); dprintln(zV); dprint("  ");
+   */
+  
+  
+  
   /*
-  dprint("X: \t"); dprint(xV); dprint("  ");
-  dprint("Y: \t"); dprint(yV); dprint("  ");
-  dprint("Z: \t"); dprintln(zV); dprint("  ");
- */
-  
-  
-  
-/*
-	X	Y	Z
-TIP_OUT	-2< x < +2	-6 < y < 5	z<-6
-TIP_IN	-2< x < +2	-6 < y < 5	6<z
-INVERT	-2< x < +2	7 < y	   -6 < z < 6
+    X	Y	Z
+  TIP_OUT	-2< x < +2	-6 < y < 5	z<-6
+  TIP_IN	-2< x < +2	-6 < y < 5	6<z
+  INVERT	-2< x < +2	7 < y	   -6 < z < 6
 
-FORWARD	-2< x < +2	y < -7	 -6 < z < 6
-GROUND	6 < x	      y < -7	 -6 < z < 6
-SKY	    x<-6        y < -7	 -6 < z < 6
+  FORWARD	-2< x < +2	y < -7	 -6 < z < 6
+  GROUND	6 < x	      y < -7	 -6 < z < 6
+  SKY	    x<-6        y < -7	 -6 < z < 6
 
-*/
-uint8_t return_orientation = ORIENT_BOUNDARY;
-if (zV > -6) {
-  if (zV < 6){
-    if (yV >7){ // probably inverted
-       if ( (xV > -2) && (xV < 2)){
-        return_orientation = ORIENT_INVERT;
-       }
-    } else {
-      if (xV < -6){ return_orientation = ORIENT_SKY; }
-      if (xV > 6 ){ return_orientation = ORIENT_GROUND; }
-      if ( (xV > -2) && (xV < 2)){
-        return_orientation = ORIENT_FORWARD;
-      }
-    }
-  } else {
-  // only case where z> 6
-    if ( (xV > -2) && (xV < 2)){
-      return_orientation = ORIENT_TIP_IN;
-    }
-  }
-
-} else {
-  // only one case where z < -6
-  if ( (xV > -2) && (xV < 2)){
-    return_orientation = ORIENT_TIP_OUT;
-  }
-    
-}
-  if (current_orientation != return_orientation) { // only need to update is position changed
-    if (ORIENT_BOUNDARY != return_orientation){ // don't change if in boundary zones
-      if ( (now - last_orientation_change ) > ORIENTATION_DEBOUNCE_TIME){ //don't report transient changes - this might change for "GUNPLAY" result
-        if ( current_orientation != return_orientation){
-          if ( (now - last_orientation_change ) > ORIENTATION_DEBOUNCE_TIME){
-            last_orientation = current_orientation;
-            current_orientation = return_orientation;
-            last_orientation_change = now;
-            retVal = true;
-            RecordOrientation(return_orientation);
-          }
+  */
+  uint8_t return_orientation = ORIENT_BOUNDARY; // default result is no result
+  if (zV > -6) {
+    if (zV < 6){
+      if (yV >7){ // probably inverted
+         if ( (xV > -2) && (xV < 2)){
+          return_orientation = ORIENT_INVERT;
+         }
+      } else {
+        if (xV < -6){ return_orientation = ORIENT_SKY; }
+        if (xV > 6 ){ return_orientation = ORIENT_GROUND; }
+        if ( (xV > -2) && (xV < 2)){
+          return_orientation = ORIENT_FORWARD;
         }
       }
+    } else {
+    // only case where z> 6
+      if ( (xV > -2) && (xV < 2)){
+        return_orientation = ORIENT_TIP_IN;
+      }
     }
-  }
 
+  } else {
+    // only one case where z < -6
+    if ( (xV > -2) && (xV < 2)){
+      return_orientation = ORIENT_TIP_OUT;
+    }
+    
+  }
+  
+  // at this point, return_orientation is our interpretation fo the current readings.
+  // Now, deboounce that and return a sensible result to the caller
+  RecordOrientation(return_orientation);
+  return_orientation = GetDebouncedOrientation();
+    if (ORIENT_BOUNDARY != return_orientation){ // don't change if in boundary zones    
+      if (current_orientation != return_orientation) { // only need to update if position changed
+        last_orientation = current_orientation;
+        current_orientation = return_orientation;
+        last_orientation_change = now;
+        retVal = true;
+        }
+      }
+  last_accel_reading = now;
+  } // throttle
   #endif
   return retVal;
 }
