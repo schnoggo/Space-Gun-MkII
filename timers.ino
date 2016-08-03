@@ -20,3 +20,11 @@ boolean TimerUp(uint8_t this_timer, unsigned long now){
 void SetTimer(uint8_t this_timer, unsigned long when){
   anim_timers[this_timer].next_frame_time  = millis()+when;
 }
+
+void AdvanceTimerFrame(uint8_t this_timer){
+  anim_timers[this_timer].frame++;
+}
+
+unsigned int GetTimerFrame(uint8_t this_timer){
+  return anim_timers[this_timer].frame;
+}

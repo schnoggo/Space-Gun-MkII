@@ -8,7 +8,11 @@ void InitSeg14(){
   LED_14_seg = Adafruit_AlphaNum4();
   LED_14_seg.begin(LED_14_I2C_ADDR);  // pass in the address
   ClearTimer(SEG14);
-
+  
+   for( uint8_t i = 0 ; i <SEG14_BUFFER_SIZE ; i++ ){
+    seg14_buffer[i] = " ";
+  }
+  seg14_buffer[SEG14_BUFFER_SIZE] = " ";
 
 #endif
 }
@@ -26,7 +30,7 @@ void StartSeg14Animation(byte anim_num){
   ClearTimer(SEG14);
   switch (seg14_anim) {
     case ANIM14_NUM:
-    case ANIM14_MSG:
+    
       Write14SegChar(0,seg14_buffer[0]);
       Write14SegChar(1,seg14_buffer[1]);
       LED_14_seg.writeDisplay();
@@ -36,10 +40,11 @@ void StartSeg14Animation(byte anim_num){
     dprintln("ANIM14_NUM");
 */
     break;
-    default:
-    dprint("anim14: ");
-    dprintln(anim_num);
-
+    case ANIM14_MSG:
+      Write14SegChar(0,seg14_buffer[2]);
+      Write14SegChar(1,seg14_buffer[3]);
+    break;
+    
   }
 }
 
@@ -62,7 +67,7 @@ void SetSeg14Value(uint8_t num){
 
 void SetSeg14Msg(char *msg){
 
-  for( uint8_t idx = 0 ; idx <20 ; idx++ ){
+  for( uint8_t idx = 0 ; idx <=SEG14_BUFFER_SIZE ; idx++ ){
     seg14_buffer[idx] =  msg[ idx ];
     // optimally check for null and break early
   }
@@ -108,7 +113,24 @@ void AnimateSeg14(unsigned long now){
         SetTimer( SEG14, 4000);
 
       break;
+      
+      
+      case ANIM14_MSG:
+        unsigned int curfram = GetTimerFrame(SEG14);
+        bool string_end;
+        boolean need_to_rewind = false;
+        if(  Write14SegChar(0,seg14_buffer[curfram])){ need_to_rewind = true;}
+        if(  Write14SegChar(1,seg14_buffer[curfram+1])){ need_to_rewind = true;}
 
+          if (need_to_rewind){
+            anim_timers[SEG14].frame = 0;
+          } else {
+           AdvanceTimerFrame(SEG14);
+        }
+
+        LED_14_seg.writeDisplay();
+        SetTimer( SEG14, 150);
+        break;
     }
   } // timer
 

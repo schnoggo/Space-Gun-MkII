@@ -118,7 +118,8 @@ uint16_t ring_anim_step = 0;
 
 // 14-segment stuff:
 uint8_t seg14_anim = ANIM14_DEMO;
-char seg14_buffer[21] = "                    ";
+#define SEG14_BUFFER_SIZE 36
+char seg14_buffer[SEG14_BUFFER_SIZE + 1];
 
 
 
@@ -174,7 +175,7 @@ void ServiceSensors(){
     if (ORIENT_FORWARD == current_orientation) {
     //  SetSeg14Value(10);
     //  StartSeg14Animation(ANIM14_NUM);
-      SetSeg14Msg("BUBBLEGUM");
+      SetSeg14Msg("WE  LOVE  ADAFRUIT   ");
       StartSeg14Animation(ANIM14_MSG);
     } else {
       StartSeg14Animation(ANIM14_DEMO);
