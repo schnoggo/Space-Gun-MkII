@@ -118,6 +118,10 @@ uint16_t ring_anim_step = 0;
 
 // 14-segment stuff:
 uint8_t seg14_anim = ANIM14_DEMO;
+char seg14_buffer[21] = "                    ";
+
+
+
 // for some reson, couldn't just declare these in shared.h, so assigning here:
 SoftwareSerial  ss = SoftwareSerial(SFX_TX, SFX_RX);
 Adafruit_Soundboard  sfx = Adafruit_Soundboard(&ss, NULL, SFX_RST);
@@ -168,7 +172,8 @@ void ServiceSensors(){
     PrintOrientation();
     StartRingAnimation(ANIM_DEMO);
     if (ORIENT_FORWARD == current_orientation) {
-      StartSeg14Animation(ANIM14_RAND);
+      SetSeg14Value(10);
+      StartSeg14Animation(ANIM14_NUM);
     } else {
       StartSeg14Animation(ANIM14_DEMO);
     }
