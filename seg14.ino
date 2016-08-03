@@ -26,9 +26,10 @@ void StartSeg14Animation(byte anim_num){
   ClearTimer(SEG14);
   switch (seg14_anim) {
     case ANIM14_NUM:
-   LED_14_seg.writeDigitAscii(0, seg14_buffer[0]);
-    LED_14_seg.writeDigitAscii(1, seg14_buffer[1]);
-    LED_14_seg.writeDisplay();
+    case ANIM14_MSG:
+      Write14SegChar(0,seg14_buffer[0]);
+      Write14SegChar(1,seg14_buffer[1]);
+      LED_14_seg.writeDisplay();
   /*  LED_14_seg.writeDigitAscii(0, "9");
     LED_14_seg.writeDigitAscii(1, "9");
     dprint("anim14: ");
@@ -42,8 +43,30 @@ void StartSeg14Animation(byte anim_num){
   }
 }
 
+boolean Write14SegChar(uint8_t pos, char character){
+  // Write a single character to the 14-segment display.
+  // Returns TRUE if encount EOS (null)
+  boolean retVal = false;
+  if ('\0' == character){
+    retVal =  true;
+    character = " ";
+  }
+  LED_14_seg.writeDigitAscii(pos, character);
+  return retVal;
+}
+
+
 void SetSeg14Value(uint8_t num){
   itoa (num,seg14_buffer,10);
+}
+
+void SetSeg14Msg(char *msg){
+
+  for( uint8_t idx = 0 ; idx <20 ; idx++ ){
+    seg14_buffer[idx] =  msg[ idx ];
+    // optimally check for null and break early
+  }
+
 }
 
 void AnimateSeg14(unsigned long now){

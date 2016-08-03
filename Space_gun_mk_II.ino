@@ -172,8 +172,10 @@ void ServiceSensors(){
     PrintOrientation();
     StartRingAnimation(ANIM_DEMO);
     if (ORIENT_FORWARD == current_orientation) {
-      SetSeg14Value(10);
-      StartSeg14Animation(ANIM14_NUM);
+    //  SetSeg14Value(10);
+    //  StartSeg14Animation(ANIM14_NUM);
+      SetSeg14Msg("BUBBLEGUM");
+      StartSeg14Animation(ANIM14_MSG);
     } else {
       StartSeg14Animation(ANIM14_DEMO);
     }
