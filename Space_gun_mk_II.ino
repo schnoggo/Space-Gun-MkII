@@ -31,11 +31,12 @@
 
 
 
-#define ANIM_DEMO 0
-#define ANIM_STANDBY 1
-#define ANIM_FIRE_QUICK 2
-#define ANIM_FIRE_LONG 3
-#define ANIM_FIRE_BLAST 4
+#define ANIM_RING_DEMO 0
+#define ANIM_RING_STANDBY 1
+
+#define ANIM_FIRE_QUICK 0
+#define ANIM_FIRE_LONG 1
+#define ANIM_FIRE_BLAST 2
 
 
 #define RING_START 0
@@ -86,10 +87,9 @@ byte prev_mode = 0;
 
 
 // combine the timers and current playing animation (and frame counter) into struct at some point
-byte ring_animation = ANIM_DEMO;
+byte ring_animation = ANIM_RING_DEMO;
 
 
-unsigned long timer_white = 0;
 unsigned long timer_audioFX = 0;
 // set up timers:
 #define SEG14 0
@@ -97,6 +97,17 @@ unsigned long timer_audioFX = 0;
 #define WHITE_PIX 2
 #define AUDIO 3
 AnimTimer anim_timers[4];
+
+AnimGroup animations[3]{
+  // ring  ID, // sound  #,// white  ID, 14-segment
+  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND},
+  { ANIM_RING_STANDBY , 2, 0xff, ANIM14_MSG},
+  { ANIM_RING_DEMO , 1, 0xff, ANIM14_RAND},
+};
+#define A_DEMO 0
+#define A_BLASTER1 1
+#define A_BLASTER2 2
+#define NO_ANIM 0xff
 
 
 
@@ -118,7 +129,7 @@ uint16_t ring_anim_step = 0;
 
 // 14-segment stuff:
 uint8_t seg14_anim = ANIM14_DEMO;
-#define SEG14_BUFFER_SIZE 36
+#define SEG14_BUFFER_SIZE 22
 char seg14_buffer[SEG14_BUFFER_SIZE + 1];
 
 
@@ -142,26 +153,65 @@ void setup() {
 }
 
 void loop() {
-  UpdateMode();
 
 // in the off chance no function is servicing he heartbeat:
   ServiceLights();
   ServiceSound();
   ServiceSensors();
 }
+
+
+
 void ServiceSensors(){
 /*
   Update global sensor values
 */
+  boolean trigger_change = UpdateTriggerState();
+  boolean orientation_changed = UpdateAccelData();
+  switch (current_mode) {
+    case MODE_CONFIG:
+      if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
+        SetNewMode(MODE_LON01);
+      }
+    break;
 
 
+    case MODE_LON01:
+      switch(current_orientation){
+        case ORIENT_FORWARD:
+          if (trigger_change && (02 == trigger_reading)){
+            PlayAnimation(A_BLASTER1);
+          }
+        break;
+
+        case ORIENT_GROUND:
+          if (02 == trigger_reading){
+            SetNewMode(MODE_CONFIG);
+          }
+        break;
+      }
+
+    break; //MODE_LON01
+
+
+    case MODE_DEMO:
+      if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
+        SetNewMode(MODE_LON01);
+      }
+    break;
+
+
+  }
+
+
+/*
 // trigger:
   boolean trigger_change = UpdateTriggerState();
   if (trigger_change){
     dprint("trigger: ");
     dprintln(trigger_reading);
     if (2 == trigger_reading){
-      StartAudioFX(4);
+      StartAudioFX(2);
     } else {
       StopAudioFX();
     }
@@ -171,7 +221,7 @@ void ServiceSensors(){
 
   if (orientation_changed){
     PrintOrientation();
-    StartRingAnimation(ANIM_DEMO);
+    StartRingAnimation(ANIM_RING_DEMO);
     if (ORIENT_FORWARD == current_orientation) {
     //  SetSeg14Value(10);
     //  StartSeg14Animation(ANIM14_NUM);
@@ -182,7 +232,7 @@ void ServiceSensors(){
     }
 
   }
-
+*/
 }
 
 void ServiceLights(){
@@ -200,9 +250,9 @@ void ServiceLights(){
 
 
   // White NeoPixels:
-  if (timer_white < now){
+
     neopixel_dirty = AnimateWhite(now) || neopixel_dirty;
-  } // timer
+
 
   UpdateNeopixels(neopixel_dirty);
 }
@@ -225,26 +275,4 @@ void safe_delay(unsigned long duration){
   }
 
 
-}
-
-void UpdateMode(){
-// Uses some globals
-// current_mode, prev_mode
-  if (current_mode != prev_mode){
-    switch(current_mode){
-      case MODE_CONFIG:
-      break;
-
-      case MODE_LON01:
-
-      break;
-
-
-      case MODE_DEMO:
-
-      break;
-
-  }
- prev_mode =   current_mode; // and set the current mode
-  }
 }

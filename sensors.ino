@@ -219,8 +219,9 @@ boolean UpdateTriggerState(){
 
     temp_trigger = temp_trigger/(TRIGGER_RANGE);
     if (temp_trigger !=  trigger_reading){
-
+      last_trigger_reading = trigger_reading;
       trigger_reading = temp_trigger;
+
       retVal =  true;
     }
     trigger_timer =  now + TRIGGER_SAMPLE_RATE;

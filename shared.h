@@ -48,18 +48,23 @@ sensors_event_t sensor_event; // declare our globalsensor event object
 //  SoftwareSerial ss =  SoftwareSerial(9, 10); // declare global
  // Adafruit_Soundboard sfx; // declare global
 #endif
-  
+
 
 
 // timer objects for animations:
 typedef struct {
   unsigned int frame; // current "frame" of animation sequence
-  unsigned long next_frame_time; // time of next update time
-  uint8_t active; // whether this animation is active
+  unsigned long next_frame_time; // time of next update time (in millis)
+  boolean active; // whether this animation is active
 } AnimTimer;
 
 
-
+typedef struct {
+  uint8_t ring; // ring animation sequence ID
+  uint8_t sound; // sound track #
+  uint8_t white; // white LED animation ID
+  uint8_t seg14; // 14-segment display animation ID
+} AnimGroup;
 
 // macros:
 // create Serial.print macros:

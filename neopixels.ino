@@ -17,17 +17,17 @@ void StartRingAnimation(byte anim_num){
   int red;
   int green;
   int blue;
-  
-// stop any existing animations 
+
+// stop any existing animations
 
 
 // start the new animation
 switch (current_mode) {
   case MODE_DEMO:
     // for now, don't check for anim type - just set it to demo
-      ring_animation = ANIM_DEMO;
-      
-       /*     
+      ring_animation = ANIM_RING_DEMO;
+
+       /*
         #define ORIENT_FORWARD 0
       #define ORIENT_GROUND  1
       #define ORIENT_TIP_OUT 2
@@ -40,11 +40,11 @@ switch (current_mode) {
       case ORIENT_FORWARD:
         red = 255; green = 20; blue = 0;
         break;
-        
+
       case ORIENT_SKY:
         red = 00 ; green = 00; blue = 255;
         break;
-        
+
       case ORIENT_GROUND:
         red = 00 ; green = 255; blue = 20;
       break;
@@ -52,24 +52,24 @@ switch (current_mode) {
       case ORIENT_TIP_IN:
         red = 30 ; green = 30; blue = 00;
       break;
-      
+
       case ORIENT_TIP_OUT:
         red = 00 ; green = 30; blue = 30;
       break;
-      
-      
+
+
       default:
          red = 10 ; green = 10; blue = 10;
-    
+
     }
 
       ring_anim_color = strip.Color(red, green, blue);
   break;
-  
-  
+
+
   default:
 
-   ring_animation = ANIM_STANDBY;
+   ring_animation = ANIM_RING_STANDBY;
   }
    ClearTimer(RINGS);
 }
@@ -90,11 +90,11 @@ byte AnimateRings(  unsigned long now){
   byte neopixel_dirty = false;
 
   #ifdef USE_NEOPIXEL
-    
+
     if (TimerUp(RINGS, now)){
 
       switch(ring_animation){
-        case ANIM_STANDBY:
+        case ANIM_RING_STANDBY:
           if (ring_anim_step > 255) {
           ring_anim_step = 0;
           } else {
@@ -107,19 +107,20 @@ byte AnimateRings(  unsigned long now){
           neopixel_dirty = true;
         break;
 
-        case ANIM_DEMO:
+        case ANIM_RING_DEMO:
           NeoWipe(ring_anim_color, 0);
           neopixel_dirty = true;
           SetTimer( RINGS, 3000);
 
         break;
 
-
+/*
         case ANIM_FIRE_LONG:
         break;
 
         case ANIM_FIRE_BLAST:
         break;
+*/
       }
 
     }
@@ -132,6 +133,9 @@ byte AnimateRings(  unsigned long now){
 byte AnimateWhite(  unsigned long now){
   byte neopixel_dirty = false;
   #ifdef USE_NEOPIXEL
+  if (TimerUp(WHITE_PIX, now)){
+    SetTimer( WHITE_PIX, 3000);
+}
 
 
   /*
@@ -221,7 +225,7 @@ byte AnimateWhite(  unsigned long now){
         white_direction = WHITE_ANIM_STEP_SIZE;
       }
 
-    timer_white = millis()+200;
+
     } // timer
 */
     #endif
