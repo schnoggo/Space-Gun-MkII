@@ -22,7 +22,7 @@ void InitAudioFX(){
 
 
     }
-    
+
   }
 
 void StartAudioFX(byte anim_num){
@@ -42,10 +42,12 @@ void AnimateAudioFX(unsigned long now){
   // globals
   // timer_audioFX = millis()+300;
   // acc
+  /*
   acc = random(10);
   if (acc < 3){
     sfx.playTrack(acc +1 );
   }
+  */
     timer_audioFX = now+2000; // check back in 2 seconds
 
 }

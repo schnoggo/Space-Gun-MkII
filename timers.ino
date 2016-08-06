@@ -65,8 +65,28 @@ uint8_t seg14; // 14-segment display animation ID
   }
 }
 
-void SetNewMode(uint8_t new_mode){
+void SetNewMode(byte new_mode){
+  // globals:
+  // selected_mode - currently selected mode in config mode
+  dprint("new mode: ");
+  dprintln(new_mode);
   prev_mode = current_mode;
   current_mode = new_mode;
+
+
+  switch (new_mode) {
+    case MODE_CONFIG:
+    SetSeg14Value(selected_mode);
+      PlayAnimation(A_CONFIG);
+    break;
+
+    case MODE_LON01:
+      PlayAnimation(A_BLASTER1);
+    break;
+
+    case MODE_DEMO:
+      PlayAnimation(A_BLASTER2);
+    break;
+  }
 
 }

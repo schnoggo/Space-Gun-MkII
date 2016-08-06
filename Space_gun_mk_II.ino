@@ -21,12 +21,12 @@
 
 
 #define MODE_CONFIG	   0
+#define MODE_LON01     1
 #define MODE_STAR_WARS 2
 #define MODE_TREK      3
-#define MODE_DEMO      8
-#define MODE_DIAMOND   4
-#define MODE_LON01     1
-#define MODE_NRG_BLADE 5
+#define MODE_DEMO      4
+#define MODE_DIAMOND   5
+#define MODE_NRG_BLADE 6
 
 
 
@@ -98,16 +98,22 @@ unsigned long timer_audioFX = 0;
 #define AUDIO 3
 AnimTimer anim_timers[4];
 
-AnimGroup animations[3]{
-  // ring  ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND},
-  { ANIM_RING_STANDBY , 2, 0xff, ANIM14_MSG},
-  { ANIM_RING_DEMO , 1, 0xff, ANIM14_RAND},
-};
+
+
 #define A_DEMO 0
 #define A_BLASTER1 1
 #define A_BLASTER2 2
+#define A_CONFIG 3
 #define NO_ANIM 0xff
+
+AnimGroup animations[4]{
+  // ring  anim ID, // sound  #,// white  ID, 14-segment
+  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND},
+  { ANIM_RING_STANDBY , 2, 0xff, ANIM14_MSG},
+  { ANIM_RING_DEMO , 1, 0xff, ANIM14_DEMO},
+  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}
+};
+
 
 
 
@@ -125,7 +131,7 @@ uint8_t white_rgb[4]; // declared global so we're not constantly allocating this
 
 uint16_t ring_anim_step = 0;
 
-
+uint8_t selected_mode = MODE_LON01;
 
 // 14-segment stuff:
 uint8_t seg14_anim = ANIM14_DEMO;
@@ -144,10 +150,13 @@ void setup() {
     #endif
 
     randomSeed(analogRead(2)); // Pin 2 should be floating
+
     InitAudioFX(); // set up sound board and serial
     InitAccel(); // set up accelerometer:
     InitSeg14(); // set up 14-segment display
     InitNeoPixels(); // set up NeoPixels
+
+    SetNewMode(current_mode); // uses global current_mode
 
 
 }
@@ -161,22 +170,43 @@ void loop() {
 }
 
 
-
 void ServiceSensors(){
 /*
   Update global sensor values
+  also handles mode changes
 */
   boolean trigger_change = UpdateTriggerState();
   boolean orientation_changed = UpdateAccelData();
+  if (orientation_changed){
+    PrintOrientation();
+  }
   switch (current_mode) {
     case MODE_CONFIG:
       if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
-        SetNewMode(MODE_LON01);
+        SetNewMode(selected_mode);
       }
+      if( (ORIENT_FORWARD == current_orientation)
+          && (02 == trigger_reading)
+          && (trigger_change)
+
+        ){
+          dprintln("HELP");
+          selected_mode++;
+        if (selected_mode > MODE_TREK) {selected_mode = MODE_LON01;}
+        dprint("selected_mode: ");
+        dprintln(selected_mode);
+        SetSeg14Value(selected_mode);
+        //  PlayAnimation(A_CONFIG);
+        StartSeg14Animation(ANIM14_NUM);
+
+      }
+
     break;
 
 
     case MODE_LON01:
+    case MODE_STAR_WARS:
+    case MODE_TREK:
       switch(current_orientation){
         case ORIENT_FORWARD:
           if (trigger_change && (02 == trigger_reading)){
@@ -243,18 +273,13 @@ void ServiceLights(){
   // Alphanumeric display:
     AnimateSeg14(now);
 
-
-
   // NeoPixelRings:
     neopixel_dirty = AnimateRings(now) || neopixel_dirty;
 
-
   // White NeoPixels:
-
     neopixel_dirty = AnimateWhite(now) || neopixel_dirty;
 
-
-  UpdateNeopixels(neopixel_dirty);
+    UpdateNeopixels(neopixel_dirty);
 }
 
 
