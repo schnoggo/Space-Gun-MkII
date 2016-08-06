@@ -33,6 +33,8 @@
 
 #define ANIM_RING_DEMO 0
 #define ANIM_RING_STANDBY 1
+#define ANIM_RING_FIRE_LOW 2
+#define ANIM_RING_FIRE_HI 3
 
 #define ANIM_FIRE_QUICK 0
 #define ANIM_FIRE_LONG 1
@@ -42,7 +44,7 @@
 #define RING_START 0
 #define RING_END 23
 #define WHITE_START 24
-#define WHITE_END 25
+#define WHITE_END 29
 #define WHITE_ANIM_STEP_SIZE 50
 
 
@@ -110,9 +112,9 @@ AnimTimer anim_timers[4];
 AnimGroup animations[5]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
-  { ANIM_RING_STANDBY ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
+  { ANIM_RING_FIRE_LOW ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
   { ANIM_RING_DEMO , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
-  { ANIM_RING_DEMO , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
+  { ANIM_RING_FIRE_HI , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
   { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM} // A_CONFIG
 };
 

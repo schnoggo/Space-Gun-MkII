@@ -13,29 +13,24 @@ void InitNeoPixels(){
 }
 
 void StartRingAnimation(byte anim_num){
+  // globals:
+  // ring_animation
+
+
 // locals:
   int red;
   int green;
   int blue;
 
+
+    ring_animation =anim_num;
 // stop any existing animations
 
-
 // start the new animation
-switch (current_mode) {
-  case MODE_DEMO:
+  switch (anim_num){
+  case ANIM_RING_DEMO:
     // for now, don't check for anim type - just set it to demo
-      ring_animation = ANIM_RING_DEMO;
 
-       /*
-        #define ORIENT_FORWARD 0
-      #define ORIENT_GROUND  1
-      #define ORIENT_TIP_OUT 2
-      #define ORIENT_TIP_IN  3
-      #define ORIENT_SKY     4
-      #define ORIENT_INVERT  5
-      #define ORIENT_GUNPLAY 6
-      */
     switch (current_orientation){
       case ORIENT_FORWARD:
         red = 255; green = 20; blue = 0;
@@ -61,16 +56,23 @@ switch (current_mode) {
       default:
          red = 10 ; green = 10; blue = 10;
 
-    }
+       }
+         ring_anim_color = strip.Color(red, green, blue);
+       break;
+  break;
 
-      ring_anim_color = strip.Color(red, green, blue);
+  case ANIM_RING_STANDBY:
+    ring_animation = ANIM_RING_STANDBY;
+  break;
+
+  case ANIM_RING_FIRE_LOW:
+  case ANIM_RING_FIRE_HI:
+     ring_anim_color = strip.Color(0, 0 , 0);
   break;
 
 
-  default:
-
-   ring_animation = ANIM_RING_STANDBY;
   }
+
    ClearTimer(RINGS);
 }
 
@@ -80,12 +82,14 @@ switch (current_mode) {
 byte AnimateRings(  unsigned long now){
   /*
   Globals:
-    ring_animation
+    ring_animation // W
     strip
     ring_anim_step
 
     Return neopixel_dirty - neopixels have changed
       false - no changes made to neopixels
+
+
   */
   byte neopixel_dirty = false;
 
@@ -114,12 +118,24 @@ byte AnimateRings(  unsigned long now){
 
         break;
 
-/*
-        case ANIM_FIRE_LONG:
+
+        case ANIM_RING_FIRE_LOW:
+          ring_anim_color = strip.Color(30,30,30);
+          neopixel_dirty = true;
+          SetTimer( RINGS, 3000);
         break;
 
-        case ANIM_FIRE_BLAST:
+
+        case ANIM_RING_FIRE_HI:
+          ring_anim_color = strip.Color(128,128,128);
+          neopixel_dirty = true;
+          SetTimer( RINGS, 3000);
         break;
+/*
+
+
+      #define ANIM_RING_FIRE_LOW 2
+      #define ANIM_RING_FIRE_HI 3
 */
       }
 
