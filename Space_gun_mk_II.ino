@@ -103,15 +103,17 @@ AnimTimer anim_timers[4];
 #define A_DEMO 0
 #define A_BLASTER1 1
 #define A_BLASTER2 2
-#define A_CONFIG 3
+#define A_BLASTER3 3
+#define A_CONFIG 4
 #define NO_ANIM 0xff
 
-AnimGroup animations[4]{
+AnimGroup animations[5]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND},
-  { ANIM_RING_STANDBY , 2, 0xff, ANIM14_MSG},
-  { ANIM_RING_DEMO , 1, 0xff, ANIM14_DEMO},
-  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}
+  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
+  { ANIM_RING_STANDBY ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
+  { ANIM_RING_DEMO , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
+  { ANIM_RING_DEMO , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
+  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM} // A_CONFIG
 };
 
 
@@ -210,7 +212,8 @@ void ServiceSensors(){
       switch(current_orientation){
         case ORIENT_FORWARD:
           if (trigger_change && (02 == trigger_reading)){
-            PlayAnimation(A_BLASTER1);
+          //  PlayAnimation(A_BLASTER1);
+          PlayAnimation(GetGunAnimation(current_mode));
           }
         break;
 
@@ -221,7 +224,7 @@ void ServiceSensors(){
         break;
       }
 
-    break; //MODE_LON01
+    break; //MODE_LON01, MODE_TREK, MODE_STAR_WARS
 
 
     case MODE_DEMO:
@@ -229,11 +232,33 @@ void ServiceSensors(){
         SetNewMode(MODE_LON01);
       }
     break;
-
+    }
 
   }
 
+uint8_t GetGunAnimation(byte which_mode){
 
+  uint8_t retVal = A_BLASTER1;
+  switch(which_mode){
+    case MODE_LON01:
+      retVal = A_BLASTER3;
+    break;
+
+    case MODE_STAR_WARS:
+      retVal = A_BLASTER1;
+    break;
+
+    case MODE_TREK:
+
+      retVal = A_BLASTER2;
+
+    break;
+
+  }
+  dprintln(which_mode);
+  return retVal;
+
+}
 /*
 // trigger:
   boolean trigger_change = UpdateTriggerState();
@@ -263,7 +288,7 @@ void ServiceSensors(){
 
   }
 */
-}
+
 
 void ServiceLights(){
   unsigned long now = millis();
