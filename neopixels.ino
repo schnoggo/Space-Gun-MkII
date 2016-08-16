@@ -16,14 +16,13 @@ void StartRingAnimation(byte anim_num){
   // globals:
   // ring_animation
 
-
 // locals:
   int red;
   int green;
   int blue;
 
 
-    ring_animation =anim_num;
+    ring_animation = anim_num;
 // stop any existing animations
 
 // start the new animation
@@ -66,7 +65,8 @@ void StartRingAnimation(byte anim_num){
   break;
 
   case ANIM_RING_BACK_TO_FRONT:
-    ring_animation = ANIM_RING_BACK_TO_FRONT;
+  case ANIM_RING_F2BWIDE:
+    ring_animation = anim_num;
   break;
 
   case ANIM_RING_FIRE_LOW:
@@ -150,6 +150,44 @@ anim_timers[this_timer].frame = 0;
 
           SetTimer( RINGS, 50);
         break;
+
+
+        case ANIM_RING_F2BWIDE:
+        this_frame = GetTimerFrame(RINGS); //int
+          for(pixel_index = 0; pixel_index <= 6;  pixel_index++) {
+            for (uint8_t j = 0; j <2; j++){
+              strip_pos = neopixel_slices[(pixel_index*2) + j];
+              if (strip_pos < 0xff){
+                neopixel_dirty = true;
+                // right-hand ring
+                if (
+                  (this_frame == pixel_index)
+                  ||
+                  (this_frame == (pixel_index-1))
+                ) {
+                  strip.setPixelColor(strip_pos, strip.Color(128,128,128));
+                } else {
+                  strip.setPixelColor(strip_pos, strip.Color(0,0,0)); // make dark
+                }
+
+                // left-hand ring
+                if (
+                  (this_frame == (6 - pixel_index))
+                ||
+                  (this_frame == (5 - pixel_index))
+                ) {
+                  strip.setPixelColor(strip_pos + 12, strip.Color(128,128,128));
+                } else {
+                  strip.setPixelColor(strip_pos + 12, strip.Color(0,0,0)); // make dark
+                }
+              }
+          }
+        }
+
+          AdvanceTimerFrame(RINGS);
+          SetTimer( RINGS, 25);
+        break;
+
 
         case ANIM_RING_DEMO:
           NeoWipe(ring_anim_color, 0);

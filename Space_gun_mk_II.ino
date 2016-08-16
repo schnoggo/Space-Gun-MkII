@@ -36,6 +36,8 @@
 #define ANIM_RING_FIRE_LOW 2
 #define ANIM_RING_FIRE_HI 3
 #define ANIM_RING_BACK_TO_FRONT 4
+#define ANIM_RING_F2BWIDE 5
+
 
 uint8_t neopixel_slices[15] = {
   0x09, 0xff,
@@ -113,21 +115,23 @@ unsigned long timer_audioFX = 0;
 AnimTimer anim_timers[4];
 
 
-
+// defined named for animaiton groups below
 #define A_DEMO 0
 #define A_BLASTER1 1
 #define A_BLASTER2 2
 #define A_BLASTER3 3
 #define A_CONFIG 4
+#define PULSE_BLAST 5
 #define NO_ANIM 0xff
 
-AnimGroup animations[5]{
+AnimGroup animations[6]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
   { ANIM_RING_FIRE_LOW ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
   { ANIM_RING_BACK_TO_FRONT , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
   { ANIM_RING_FIRE_HI , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
-  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM} // A_CONFIG
+  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}, // A_CONFIG
+  { ANIM_RING_F2BWIDE, 03, 0xff, ANIM14_MSG} // PULSE_BLAST
 };
 
 
@@ -251,11 +255,17 @@ void ServiceSensors(){
   }
 
 uint8_t GetGunAnimation(byte which_mode){
+  //Inputs:
+  // current global mode
+  //
+  // Return:
+  // Group animation number suitable for PlayAnimation()
 
   uint8_t retVal = A_BLASTER1;
   switch(which_mode){
     case MODE_LON01:
-      retVal = A_BLASTER3;
+    //  retVal = A_BLASTER3;
+    retVal = PULSE_BLAST;
     break;
 
     case MODE_STAR_WARS:
@@ -269,7 +279,12 @@ uint8_t GetGunAnimation(byte which_mode){
     break;
 
   }
+  /*
+  dprint("animation: ");
+  dprint(retVal);
+  dprint("  mode: ");
   dprintln(which_mode);
+  */
   return retVal;
 
 }
