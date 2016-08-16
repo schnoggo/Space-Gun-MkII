@@ -8,6 +8,7 @@ void InitAudioFX(){
   ss = SoftwareSerial(SFX_TX, SFX_RX);
   sfx = Adafruit_Soundboard(&ss, NULL, SFX_RST);
 */
+pinMode(AUDIO_SENSE, INPUT);
   ss.begin(9600);
   delay(200); // give it a moment to warm up
 
@@ -25,7 +26,15 @@ void InitAudioFX(){
 
   }
 
+boolean IsFXPlaying(){
+  boolean retVal = true;
+  if (digitalRead(AUDIO_SENSE)){
+    retVal = false;
+  }
+  return retVal;
+}
 void StartAudioFX(byte anim_num){
+
   sfx.playTrack(anim_num);
 
 }
@@ -48,8 +57,7 @@ void AnimateAudioFX(unsigned long now){
     sfx.playTrack(acc +1 );
   }
   */
-    timer_audioFX = now+2000; // check back in 2 seconds
-
+    timer_audioFX = now+40;
 }
 
 

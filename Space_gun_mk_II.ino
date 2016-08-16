@@ -8,11 +8,12 @@
 #define NEO_PIXEL_DATA_PIN 3
 #define NEOPIXEL_WHITE_DATA_PIN 8
 #define TRIGGER_PIN 0
+#define AUDIO_SENSE 9
 
 //  SoftwareSerial Rest, RX & TX pins:
 #define SFX_RST 5
-#define SFX_TX 6
-#define SFX_RX 7
+#define SFX_TX 12
+#define SFX_RX 11
 
 
 // Other constants:
@@ -229,7 +230,8 @@ void ServiceSensors(){
     case MODE_TREK:
       switch(current_orientation){
         case ORIENT_FORWARD:
-          if (trigger_change && (02 == trigger_reading)){
+          if (trigger_change && (02 == trigger_reading) && ( false == IsFXPlaying()) ){
+
           //  PlayAnimation(A_BLASTER1);
           PlayAnimation(GetGunAnimation(current_mode));
           }

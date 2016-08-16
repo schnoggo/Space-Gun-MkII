@@ -58,7 +58,7 @@ void StartRingAnimation(byte anim_num){
        }
          ring_anim_color = strip.Color(red, green, blue);
        break;
-  break;
+    break;
 
   case ANIM_RING_STANDBY:
     ring_animation = ANIM_RING_STANDBY;
@@ -72,6 +72,9 @@ void StartRingAnimation(byte anim_num){
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
      ring_anim_color = strip.Color(0, 0 , 0);
+     ring_animation = anim_num;
+       NeoWipe(ring_anim_color, 0);
+
   break;
 
 
@@ -198,9 +201,18 @@ anim_timers[this_timer].frame = 0;
 
 
         case ANIM_RING_FIRE_LOW:
-          ring_anim_color = strip.Color(30,30,30);
+        this_frame = GetTimerFrame(RINGS); //int
+
+          ring_anim_color = strip.Color((this_frame+2)*15,(this_frame+2)*15,(this_frame+2)*15);
+          NeoWipe(ring_anim_color, 0);
           neopixel_dirty = true;
-          SetTimer( RINGS, 3000);
+          if (this_frame <12){
+            AdvanceTimerFrame(RINGS);
+            SetTimer( RINGS, 15);
+          } else {
+            NeoWipe(0, 0);
+            SetTimer( RINGS, 30000);
+          }
         break;
 
 
