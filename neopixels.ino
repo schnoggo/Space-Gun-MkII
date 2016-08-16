@@ -65,6 +65,10 @@ void StartRingAnimation(byte anim_num){
     ring_animation = ANIM_RING_STANDBY;
   break;
 
+  case ANIM_RING_BACK_TO_FRONT:
+    ring_animation = ANIM_RING_BACK_TO_FRONT;
+  break;
+
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
      ring_anim_color = strip.Color(0, 0 , 0);
@@ -89,9 +93,12 @@ byte AnimateRings(  unsigned long now){
     Return neopixel_dirty - neopixels have changed
       false - no changes made to neopixels
 
-
+anim_timers[this_timer].frame = 0;
   */
   byte neopixel_dirty = false;
+  byte pixel_index;
+  uint8_t strip_pos;
+  unsigned int this_frame;
 
   #ifdef USE_NEOPIXEL
 
@@ -104,11 +111,44 @@ byte AnimateRings(  unsigned long now){
           } else {
           ring_anim_step++;
           }
-          uint16_t i;
-          for(i=RING_START; i<=RING_END; i++) {
-          strip.setPixelColor(i, Wheel((i+ ring_anim_step ) & 255));
+
+          for(pixel_index = RING_START; pixel_index <= RING_END;  pixel_index++) {
+          strip.setPixelColor(pixel_index, Wheel((pixel_index+ ring_anim_step ) & 255));
           }
           neopixel_dirty = true;
+        break;
+
+        case ANIM_RING_BACK_TO_FRONT:
+        this_frame = GetTimerFrame(RINGS); //int
+          for(pixel_index = 0; pixel_index <= 6;  pixel_index++) {
+            for (uint8_t j = 0; j <2; j++){
+              strip_pos = neopixel_slices[(pixel_index*2) + j];
+              if (strip_pos < 0xff){
+                neopixel_dirty = true;
+                // right-hand ring
+                if (this_frame == pixel_index) {
+                  strip.setPixelColor(strip_pos, strip.Color(128,128,128));
+                } else {
+                  strip.setPixelColor(strip_pos, strip.Color(0,0,0)); // make dark
+                }
+
+                // left-hand ring
+                if (this_frame == (6 - pixel_index)) {
+                  strip.setPixelColor(strip_pos + 12, strip.Color(128,128,128));
+                } else {
+                  strip.setPixelColor(strip_pos + 12, strip.Color(0,0,0)); // make dark
+                }
+              }
+          }
+        }
+        if (this_frame < 10){
+          AdvanceTimerFrame(RINGS);
+        } else {
+
+          ClearTimer(RINGS);
+        }
+
+          SetTimer( RINGS, 50);
         break;
 
         case ANIM_RING_DEMO:
@@ -312,4 +352,13 @@ void NeoWipe(uint32_t c, uint8_t wait) {
   if (0 == wait){
  //   strip.show();
   }
+}
+
+
+
+uint8_t NormalizeRingPos(uint8_t realPos){
+
+  while (realPos < 0) { realPos += 16;}
+  while (realPos > 15) { realPos -= 16; }
+  return realPos;
 }

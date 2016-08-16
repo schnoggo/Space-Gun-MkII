@@ -35,17 +35,29 @@
 #define ANIM_RING_STANDBY 1
 #define ANIM_RING_FIRE_LOW 2
 #define ANIM_RING_FIRE_HI 3
+#define ANIM_RING_BACK_TO_FRONT 4
 
+uint8_t neopixel_slices[15] = {
+  0x09, 0xff,
+  0x0a, 0x08,
+  0x0b, 0x07,
+  0x00, 0x06,
+  0x01, 0x05,
+  0x02, 0x04,
+  0x03, 0xff
+};
 #define ANIM_FIRE_QUICK 0
 #define ANIM_FIRE_LONG 1
 #define ANIM_FIRE_BLAST 2
 
 
-#define RING_START 0
-#define RING_END 23
-#define WHITE_START 24
-#define WHITE_END 29
+#define RING_START 0 // first color neopixel in rings
+#define RING_END 23 // last color neopixel in rings
+#define WHITE_START 24 // first white (W,W,W) Neopixel
+#define WHITE_END 29 // last white neopixel
 #define WHITE_ANIM_STEP_SIZE 50
+#define RING_OFFSET_LEFT 0
+#define RING_OFFSET_RIGHT 0
 
 
 #define ANIM14_DEMO 0
@@ -113,7 +125,7 @@ AnimGroup animations[5]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
   { ANIM_RING_FIRE_LOW ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
-  { ANIM_RING_DEMO , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
+  { ANIM_RING_BACK_TO_FRONT , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
   { ANIM_RING_FIRE_HI , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
   { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM} // A_CONFIG
 };
