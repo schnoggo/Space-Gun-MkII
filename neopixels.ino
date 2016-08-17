@@ -14,7 +14,7 @@ void InitNeoPixels(){
 
 void StartRingAnimation(byte anim_num){
   // globals:
-  // ring_animation
+  // anim_timers[RINGS].id
 
 // locals:
   int red;
@@ -22,7 +22,7 @@ void StartRingAnimation(byte anim_num){
   int blue;
 
 
-    ring_animation = anim_num;
+     anim_timers[RINGS].id = anim_num;
 // stop any existing animations
 
 // start the new animation
@@ -61,18 +61,15 @@ void StartRingAnimation(byte anim_num){
     break;
 
   case ANIM_RING_STANDBY:
-    ring_animation = ANIM_RING_STANDBY;
-  break;
-
   case ANIM_RING_BACK_TO_FRONT:
   case ANIM_RING_F2BWIDE:
-    ring_animation = anim_num;
+    anim_timers[RINGS].id = anim_num;
   break;
 
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
      ring_anim_color = strip.Color(0, 0 , 0);
-     ring_animation = anim_num;
+     anim_timers[RINGS].id = anim_num;
        NeoWipe(ring_anim_color, 0);
 
   break;
@@ -89,7 +86,7 @@ void StartRingAnimation(byte anim_num){
 byte AnimateRings(  unsigned long now){
   /*
   Globals:
-    ring_animation // W
+    anim_timers[RINGS].id // W
     strip
     ring_anim_step
 
@@ -107,7 +104,7 @@ anim_timers[this_timer].frame = 0;
 
     if (TimerUp(RINGS, now)){
 
-      switch(ring_animation){
+      switch(anim_timers[RINGS].id){
         case ANIM_RING_STANDBY:
           if (ring_anim_step > 255) {
           ring_anim_step = 0;
@@ -236,6 +233,12 @@ anim_timers[this_timer].frame = 0;
 }
 
 
+void StartWhiteAnimation(byte anim_num){
+// ANIM_WHITE_PULSE
+
+
+}
+
 byte AnimateWhite(  unsigned long now){
   byte neopixel_dirty = false;
   #ifdef USE_NEOPIXEL
@@ -335,6 +338,7 @@ byte AnimateWhite(  unsigned long now){
     } // timer
 */
     #endif
+    neopixel_dirty = true;
     return neopixel_dirty;
 
 }

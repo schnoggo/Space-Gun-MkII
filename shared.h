@@ -53,6 +53,7 @@ sensors_event_t sensor_event; // declare our globalsensor event object
 
 // timer objects for animations:
 typedef struct {
+  byte id;
   unsigned int frame; // current "frame" of animation sequence
   unsigned long next_frame_time; // time of next update time (in millis)
   boolean active; // whether this animation is active

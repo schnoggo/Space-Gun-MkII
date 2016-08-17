@@ -70,6 +70,9 @@ uint8_t neopixel_slices[15] = {
 #define ANIM14_SPIN 4
 #define ANIM14_MARQUEE  5
 
+
+#define ANIM_WHITE_PULSE 0
+
 //Global vars:
 int trigger_reading;
 int last_trigger_reading = -1;
@@ -103,8 +106,6 @@ byte current_mode = MODE_DEMO;
 byte prev_mode = 0;
 
 
-// combine the timers and current playing animation (and frame counter) into struct at some point
-byte ring_animation = ANIM_RING_DEMO;
 
 
 unsigned long timer_audioFX = 0;
@@ -115,8 +116,7 @@ unsigned long timer_audioFX = 0;
 #define AUDIO 3
 AnimTimer anim_timers[4];
 
-
-// defined named for animaiton groups below
+// defined named for animation groups below
 #define A_DEMO 0
 #define A_BLASTER1 1
 #define A_BLASTER2 2
@@ -129,7 +129,7 @@ AnimGroup animations[6]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
   { ANIM_RING_FIRE_LOW ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
-  { ANIM_RING_BACK_TO_FRONT , 02, 0xff, ANIM14_DEMO},  // A_BLASTER2
+  { ANIM_RING_BACK_TO_FRONT , 02, ANIM_WHITE_PULSE, ANIM14_DEMO},  // A_BLASTER2
   { ANIM_RING_FIRE_HI , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
   { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}, // A_CONFIG
   { ANIM_RING_F2BWIDE, 03, 0xff, ANIM14_MSG} // PULSE_BLAST
