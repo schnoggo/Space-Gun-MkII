@@ -14,7 +14,7 @@ void InitNeoPixels(){
 
 void StartRingAnimation(byte anim_num){
   // globals:
-  // anim_timers[RINGS].id
+  // anim_timers[RINGS].anim_id
   // inputs:
   // anim_num which animation to play
 
@@ -24,7 +24,7 @@ void StartRingAnimation(byte anim_num){
   int blue;
 
 
-     anim_timers[RINGS].id = anim_num;
+     anim_timers[RINGS].anim_id = anim_num;
 // stop any existing animations
 
 // start the new animation
@@ -65,13 +65,13 @@ void StartRingAnimation(byte anim_num){
   case ANIM_RING_STANDBY:
   case ANIM_RING_BACK_TO_FRONT:
   case ANIM_RING_F2BWIDE:
-    anim_timers[RINGS].id = anim_num;
+    anim_timers[RINGS].anim_id = anim_num;
   break;
 
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
      ring_anim_color = strip.Color(0, 0 , 0);
-     anim_timers[RINGS].id = anim_num;
+     anim_timers[RINGS].anim_id = anim_num;
        RingSolid(ring_anim_color);
 
   break;
@@ -79,7 +79,7 @@ void StartRingAnimation(byte anim_num){
 
   }
 
-   ClearTimer(RINGS);
+   ResetAnimation(RINGS);
 }
 
 
@@ -88,7 +88,7 @@ void StartRingAnimation(byte anim_num){
 byte AnimateRings(  unsigned long now){
   /*
   Globals:
-    anim_timers[RINGS].id // W
+    anim_timers[RINGS].anim_id // W
     strip
     ring_anim_step
 
@@ -106,7 +106,7 @@ anim_timers[this_timer].frame = 0;
 
     if (TimerUp(RINGS, now)){
 
-      switch(anim_timers[RINGS].id){
+      switch(anim_timers[RINGS].anim_id){
         case ANIM_RING_STANDBY:
           if (ring_anim_step > 255) {
           ring_anim_step = 0;
@@ -147,7 +147,7 @@ anim_timers[this_timer].frame = 0;
           AdvanceTimerFrame(RINGS);
         } else {
 
-          ClearTimer(RINGS);
+          ResetAnimation(RINGS);
         }
 
           SetTimer( RINGS, 50);
@@ -236,7 +236,7 @@ anim_timers[this_timer].frame = 0;
 
 
 void StartWhiteAnimation(byte anim_num){
-  anim_timers[WHITE_PIX].id = anim_num;
+  anim_timers[WHITE_PIX].anim_id = anim_num;
   int w1, w2, w3;
     switch (anim_num){
       case ANIM_WHITE_PULSE:
@@ -253,7 +253,7 @@ void StartWhiteAnimation(byte anim_num){
     }
 
     white_anim_color = strip.Color(w1, w2, w3);
-   ClearTimer(RINGS);
+   ResetAnimation(WHITE_PIX);
 
 }
 
@@ -280,7 +280,7 @@ byte AnimateWhite(  unsigned long now){
         SetTimer( WHITE_PIX, 20);
         AdvanceTimerFrame(WHITE_PIX);
       } else {
-        ClearTimer(WHITE_PIX);
+        ResetAnimation(WHITE_PIX);
       }
 
   }

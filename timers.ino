@@ -1,13 +1,20 @@
 void ClearTimer(uint8_t this_timer){
 
-  anim_timers[this_timer].id = 0xff;
-  anim_timers[this_timer].frame = 0;
-  anim_timers[this_timer].next_frame_time = 0;
-  anim_timers[this_timer].active = true;
+  anim_timers[this_timer].anim_id = 0xff;
+  ResetAnimation(this_timer);
 
 }
 
+void ResetAnimation(uint8_t this_timer){
+  anim_timers[this_timer].frame = 0;
+  anim_timers[this_timer].next_frame_time = 0;
+  anim_timers[this_timer].active = true;
+}
+
+
 boolean TimerUp(uint8_t this_timer, unsigned long now){
+  // returns if it is time to display the next
+  // frame of the specified timer
   boolean retVal = false;
   if (anim_timers[this_timer].active){
 
@@ -19,14 +26,20 @@ boolean TimerUp(uint8_t this_timer, unsigned long now){
 }
 
 void SetTimer(uint8_t this_timer, unsigned long when){
+  // Sets the time of the next frame for the specified timer
+  // inpputs:
+  // which timer
+  // when
+
   anim_timers[this_timer].next_frame_time  = millis()+when;
 }
 
 void SetTimerAnimation(uint8_t this_timer, byte anim_id){
-  anim_timers[this_timer].id  = anim_id;
+  anim_timers[this_timer].anim_id  = anim_id;
 }
+
 byte GetTimerAnimation(uint8_t this_timer){
-  return anim_timers[this_timer].id;
+  return anim_timers[this_timer].anim_id;
 
 }
 
