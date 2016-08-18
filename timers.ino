@@ -1,5 +1,6 @@
 void ClearTimer(uint8_t this_timer){
 
+  anim_timers[this_timer].id = 0xff;
   anim_timers[this_timer].frame = 0;
   anim_timers[this_timer].next_frame_time = 0;
   anim_timers[this_timer].active = true;
@@ -19,6 +20,14 @@ boolean TimerUp(uint8_t this_timer, unsigned long now){
 
 void SetTimer(uint8_t this_timer, unsigned long when){
   anim_timers[this_timer].next_frame_time  = millis()+when;
+}
+
+void SetTimerAnimation(uint8_t this_timer, byte anim_id){
+  anim_timers[this_timer].id  = anim_id;
+}
+byte GetTimerAnimation(uint8_t this_timer){
+  return anim_timers[this_timer].id;
+
 }
 
 void AdvanceTimerFrame(uint8_t this_timer){
@@ -52,7 +61,7 @@ uint8_t seg14; // 14-segment display animation ID
 
     t_anim = animations[anim_num].white;
     if ( NO_ANIM != t_anim) {
-      StartRingAnimation(t_anim);
+      StartWhiteAnimation(t_anim);
     }
 
     t_anim = animations[anim_num].seg14;

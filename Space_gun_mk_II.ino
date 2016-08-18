@@ -72,6 +72,7 @@ uint8_t neopixel_slices[15] = {
 
 
 #define ANIM_WHITE_PULSE 0
+#define ANIM_WHITE_SOLID 1
 
 //Global vars:
 int trigger_reading;
@@ -127,10 +128,10 @@ AnimTimer anim_timers[4];
 
 AnimGroup animations[6]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO , 0xff, 0xff, ANIM14_RAND}, // A_DEMO
-  { ANIM_RING_FIRE_LOW ,01 , 0xff, ANIM14_MSG},  // A_BLASTER1 (SW)_
+  { ANIM_RING_DEMO , 0xff, ANIM_WHITE_SOLID, ANIM14_RAND}, // A_DEMO
+  { ANIM_RING_FIRE_LOW ,01 , ANIM_WHITE_PULSE, ANIM14_MSG},  // A_BLASTER1 (SW)_
   { ANIM_RING_BACK_TO_FRONT , 02, ANIM_WHITE_PULSE, ANIM14_DEMO},  // A_BLASTER2
-  { ANIM_RING_FIRE_HI , 03, 0xff, ANIM14_RAND},  // A_BLASTER3
+  { ANIM_RING_FIRE_HI , 03, ANIM_WHITE_PULSE, ANIM14_RAND},  // A_BLASTER3
   { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}, // A_CONFIG
   { ANIM_RING_F2BWIDE, 03, 0xff, ANIM14_MSG} // PULSE_BLAST
 };
@@ -141,6 +142,8 @@ AnimGroup animations[6]{
 uint8_t acc; // generic 8-bit global to avoid memory thrashing
 uint32_t c = 0; // generic global color
 uint32_t ring_anim_color=0;
+uint32_t white_anim_color=0;
+int white_anim_dir = 1;
 byte alpha_squence_index = '!';
 
 

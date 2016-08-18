@@ -15,6 +15,8 @@ void InitNeoPixels(){
 void StartRingAnimation(byte anim_num){
   // globals:
   // anim_timers[RINGS].id
+  // inputs:
+  // anim_num which animation to play
 
 // locals:
   int red;
@@ -70,7 +72,7 @@ void StartRingAnimation(byte anim_num){
   case ANIM_RING_FIRE_HI:
      ring_anim_color = strip.Color(0, 0 , 0);
      anim_timers[RINGS].id = anim_num;
-       NeoWipe(ring_anim_color, 0);
+       RingSolid(ring_anim_color);
 
   break;
 
@@ -190,7 +192,7 @@ anim_timers[this_timer].frame = 0;
 
 
         case ANIM_RING_DEMO:
-          NeoWipe(ring_anim_color, 0);
+          RingSolid(ring_anim_color);
           neopixel_dirty = true;
           SetTimer( RINGS, 3000);
 
@@ -201,13 +203,13 @@ anim_timers[this_timer].frame = 0;
         this_frame = GetTimerFrame(RINGS); //int
 
           ring_anim_color = strip.Color((this_frame+2)*15,(this_frame+2)*15,(this_frame+2)*15);
-          NeoWipe(ring_anim_color, 0);
+          RingSolid(ring_anim_color);
           neopixel_dirty = true;
           if (this_frame <12){
             AdvanceTimerFrame(RINGS);
             SetTimer( RINGS, 15);
           } else {
-            NeoWipe(0, 0);
+            RingSolid(0);
             SetTimer( RINGS, 30000);
           }
         break;
@@ -234,17 +236,62 @@ anim_timers[this_timer].frame = 0;
 
 
 void StartWhiteAnimation(byte anim_num){
-// ANIM_WHITE_PULSE
+  anim_timers[WHITE_PIX].id = anim_num;
+  int w1, w2, w3;
+    switch (anim_num){
+      case ANIM_WHITE_PULSE:
+      w1 = 0;
+      w2 = 0;
+      w3 = 0;
 
+      break;
+
+      default:
+      w1 = 0;
+      w2 = 0;
+      w3 = 0;
+    }
+
+    white_anim_color = strip.Color(w1, w2, w3);
+   ClearTimer(RINGS);
 
 }
 
 byte AnimateWhite(  unsigned long now){
   byte neopixel_dirty = false;
+  unsigned int this_frame;
+
+
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
-    SetTimer( WHITE_PIX, 3000);
-}
+      this_frame = GetTimerFrame(WHITE_PIX); //int
+
+    if (this_frame < 255){
+      white_anim_color =  strip.Color(this_frame, this_frame, this_frame);
+    } else {
+        white_anim_color =  strip.Color(511-this_frame, 511-this_frame, 511-this_frame);
+    }
+      neopixel_dirty =  true;
+      for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
+          strip.setPixelColor(i, white_anim_color);
+      }
+
+      if (this_frame < 512){
+        SetTimer( WHITE_PIX, 20);
+        AdvanceTimerFrame(WHITE_PIX);
+      } else {
+        ClearTimer(WHITE_PIX);
+      }
+
+  }
+
+
+
+
+
+
+
+
 
 
   /*
@@ -392,6 +439,21 @@ uint32_t Wheel(byte WheelPos) {
 
 }
 #endif
+
+
+/*
+#define RING_START 0 // first color neopixel in rings
+#define RING_END 23 // last color neopixel in rings
+#define WHITE_START 24 // first white (W,W,W) Neopixel
+#define WHITE_END 29
+*/
+
+void RingSolid(uint32_t c){
+  for(uint8_t i=RING_START; i<=RING_END; i++) {
+      strip.setPixelColor(i, c);
+  }
+}
+
 
 
 // Fill the dots one after the other with a color
