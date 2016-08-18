@@ -265,7 +265,7 @@ byte AnimateWhite(  unsigned long now){
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
       this_frame = GetTimerFrame(WHITE_PIX); //int
-
+/*
     if (this_frame < 255){
       white_anim_color =  strip.Color(this_frame, this_frame, this_frame);
     } else {
@@ -282,7 +282,18 @@ byte AnimateWhite(  unsigned long now){
       } else {
         ResetAnimation(WHITE_PIX);
       }
-
+*/
+    if ( this_frame % 2 == 0 ){
+        white_anim_color =  strip.Color(255, 255, 255);
+    } else {
+          white_anim_color =  strip.Color(0, 0, 0);
+    }
+    neopixel_dirty =  true;
+    for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
+        strip.setPixelColor(i, white_anim_color);
+    }
+  SetTimer( WHITE_PIX, 300);
+  AdvanceTimerFrame(WHITE_PIX);
   }
 
 
