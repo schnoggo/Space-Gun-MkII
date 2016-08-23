@@ -70,10 +70,9 @@ void StartRingAnimation(byte anim_num){
 
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
-     ring_anim_color = strip.Color(0, 0 , 0);
-     anim_timers[RINGS].anim_id = anim_num;
-       RingSolid(ring_anim_color);
-
+    ring_anim_color = strip.Color(0, 0 , 0);
+    anim_timers[RINGS].anim_id = anim_num;
+    RingSolid(ring_anim_color);
   break;
 
 
@@ -236,6 +235,8 @@ anim_timers[this_timer].frame = 0;
 
 
 void StartWhiteAnimation(byte anim_num){
+  dprint("StartWhiteAnimation");
+  dprintln(anim_num);
   anim_timers[WHITE_PIX].anim_id = anim_num;
   int w1, w2, w3;
     switch (anim_num){
@@ -260,40 +261,45 @@ void StartWhiteAnimation(byte anim_num){
 byte AnimateWhite(  unsigned long now){
   byte neopixel_dirty = false;
   unsigned int this_frame;
-
-
+  uint32_t t_color;
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
-      this_frame = GetTimerFrame(WHITE_PIX); //int
-/*
-    if (this_frame < 255){
-      white_anim_color =  strip.Color(this_frame, this_frame, this_frame);
-    } else {
-        white_anim_color =  strip.Color(511-this_frame, 511-this_frame, 511-this_frame);
-    }
-      neopixel_dirty =  true;
-      for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
-          strip.setPixelColor(i, white_anim_color);
-      }
+    this_frame = GetTimerFrame(WHITE_PIX); //int
+    switch(anim_timers[WHITE_PIX].anim_id){
+      case ANIM_WHITE_PULSE:
+        if ( this_frame % 2 == 0 ){
+            white_anim_color =  strip.Color(00, 15, 0);
+        } else {
+              white_anim_color =  strip.Color(0, 0, 0);
+        }
+        neopixel_dirty =  true;
+        for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
+            strip.setPixelColor(i, white_anim_color);
+        }
+      neopixel_dirty = true;
+      SetTimer( WHITE_PIX, 300);
+      AdvanceTimerFrame(WHITE_PIX);
+    break;
 
-      if (this_frame < 512){
-        SetTimer( WHITE_PIX, 20);
-        AdvanceTimerFrame(WHITE_PIX);
-      } else {
-        ResetAnimation(WHITE_PIX);
-      }
-*/
-    if ( this_frame % 2 == 0 ){
-        white_anim_color =  strip.Color(255, 255, 255);
-    } else {
-          white_anim_color =  strip.Color(0, 0, 0);
+      case ANIM_WHITE_BACK_TO_FRONT:
+        if ( this_frame < 3) {
+          for(uint16_t i=0; i<3; i++) {
+            if (i == this_frame) {
+                white_anim_color = strip.Color(15, 15, 15);
+                dprint( "frame:");
+                dprintln( this_frame);
+            } else {
+                white_anim_color = 0;
+            }
+            SetWhitePixel(i, white_anim_color);
+          }
+          neopixel_dirty = true;
+          SetTimer( WHITE_PIX, 2000);
+          AdvanceTimerFrame(WHITE_PIX);
+        }
+      break;
+
     }
-    neopixel_dirty =  true;
-    for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
-        strip.setPixelColor(i, white_anim_color);
-    }
-  SetTimer( WHITE_PIX, 300);
-  AdvanceTimerFrame(WHITE_PIX);
   }
 
 
@@ -305,55 +311,30 @@ byte AnimateWhite(  unsigned long now){
 
 
 
+
+
+
+
+
   /*
-  0: 0,  0,  0,
-  50: 13,  13,  12,
-  100: 25,  25,  25,
-  150: 38,  38,  37,
-  200: 50,  50,  50,
-  250: 63,  63,  62,
-  300: 75,  75,  75,
-  350: 88,  88,  87,
-  400: 100,  100,  100,
-  450: 113,  113,  112,
-  500: 125,  125,  125,
-  550: 138,  138,  137,
-  600: 150,  150,  150,
-  650: 163,  163,  162,
-  700: 175,  175,  175,
-  750: 188,  188,  187,
-  800: 200,  200,  200,
-  850: 213,  213,  212,
-  900: 225,  225,  225,
-  950: 238,  238,  237,
-  1000: 250,  250,  250,
-  1023: 0,  0,  0,
-  973: 244,  243,  243,
-  923: 231,  231,  231,
-  873: 219,  218,  218,
-  823: 206,  206,  206,
-  773: 194,  193,  193,
-  723: 181,  181,  181,
-  673: 169,  168,  168,
-  623: 156,  156,  156,
-  573: 144,  143,  143,
-  523: 131,  131,  131,
-  473: 119,  118,  118,
-  423: 106,  106,  106,
-  373: 94,  93,  93,
-  323: 81,  81,  81,
-  273: 69,  68,  68,
-  223: 56,  56,  56,
-  173: 44,  43,  43,
-  123: 31,  31,  31,
-  73: 19,  18,  18,
-  23: 6,  6,  6,
-  1023: 0,  0,  0,
-  973: 244,  243,  243,
-  923: 231,  231,  231,
-  873: 219,  218,  218,
-  823: 206,  206,  206,
+      if (this_frame < 255){
+        white_anim_color =  strip.Color(this_frame, this_frame, this_frame);
+      } else {
+          white_anim_color =  strip.Color(511-this_frame, 511-this_frame, 511-this_frame);
+      }
+        neopixel_dirty =  true;
+        for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
+            strip.setPixelColor(i, white_anim_color);
+        }
+
+        if (this_frame < 512){
+          SetTimer( WHITE_PIX, 20);
+          AdvanceTimerFrame(WHITE_PIX);
+        } else {
+          ResetAnimation(WHITE_PIX);
+        }
   */
+
 
 /*
    dprint(white_anim_step);
@@ -396,7 +377,6 @@ byte AnimateWhite(  unsigned long now){
     } // timer
 */
     #endif
-    neopixel_dirty = true;
     return neopixel_dirty;
 
 }
@@ -463,6 +443,24 @@ void RingSolid(uint32_t c){
   for(uint8_t i=RING_START; i<=RING_END; i++) {
       strip.setPixelColor(i, c);
   }
+}
+
+// to get white pixel from ordinate:
+// pixel 1 = 2-x. pixel 2 = x+3
+void SetWhitePixel(uint8_t x, uint32_t color){
+// inputs:
+// x = ordintate (0-2) 0 is rear of gun
+// color = NeoPixel packed color
+  dprint("SetWhitePixel: x1=");
+  uint8_t ord = (WHITE_START + 2 - x);
+  dprint(ord);
+  strip.setPixelColor(  ord, color);
+  ord =(WHITE_START + 3 + x);
+  dprint(" x2=");
+  dprintln(ord)
+  strip.setPixelColor(  ord , color);
+
+
 }
 
 
