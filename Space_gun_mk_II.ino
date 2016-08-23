@@ -30,8 +30,6 @@
 #define MODE_NRG_BLADE 6
 
 
-
-
 #define ANIM_RING_DEMO 0
 #define ANIM_RING_STANDBY 1
 #define ANIM_RING_FIRE_LOW 2
@@ -74,6 +72,7 @@ uint8_t neopixel_slices[15] = {
 #define ANIM_WHITE_PULSE 0
 #define ANIM_WHITE_SOLID 1
 #define ANIM_WHITE_BACK_TO_FRONT 2
+#define ANIM_WHITE_RANDOGLOW 3
 
 //Global vars:
 int trigger_reading;
@@ -131,11 +130,11 @@ AnimGroup animations[6]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO , 0xff, ANIM_WHITE_SOLID, ANIM14_RAND}, // A_DEMO
   { ANIM_RING_FIRE_LOW ,01 , ANIM_WHITE_PULSE, ANIM14_MSG},  // A_BLASTER1 (SW)_
-  { ANIM_RING_BACK_TO_FRONT , 02, ANIM_WHITE_BACK_TO_FRONT, ANIM14_DEMO},  // A_BLASTER2
+  { ANIM_RING_BACK_TO_FRONT , 02, ANIM_WHITE_RANDOGLOW, ANIM14_DEMO},  // A_BLASTER2
   { ANIM_RING_FIRE_HI , 03, ANIM_WHITE_PULSE, ANIM14_RAND},  // A_BLASTER3
-  { ANIM_RING_DEMO, 0xff, 0xff, ANIM14_NUM}, // A_CONFIG
-  //{ ANIM_RING_F2BWIDE, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
-  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
+  { ANIM_RING_DEMO, 0xff, ANIM_WHITE_RANDOGLOW, ANIM14_NUM}, // A_CONFIG
+  { ANIM_RING_F2BWIDE, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
+//  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
 };
 
 
@@ -147,12 +146,8 @@ uint32_t ring_anim_color=0;
 uint32_t white_anim_color=0;
 int white_anim_dir = 1;
 byte alpha_squence_index = '!';
+uint8_t white_pixel_colors[9]; //3 sets of "rgb"
 
-
-uint32_t white_range = (256*4)-1;
-int white_direction = WHITE_ANIM_STEP_SIZE;
-signed long white_anim_step = 0;
-uint8_t white_rgb[4]; // declared global so we're not constantly allocating this
 
 
 
@@ -254,6 +249,11 @@ void ServiceSensors(){
 
 
     case MODE_DEMO:
+      if (orientation_changed){
+        StartRingAnimation(ANIM_RING_DEMO);
+      }
+    
+    
       if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
         SetNewMode(MODE_LON01);
       }

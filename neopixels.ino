@@ -25,6 +25,7 @@ void StartRingAnimation(byte anim_num){
 
 
      anim_timers[RINGS].anim_id = anim_num;
+      ResetAnimation(RINGS);
 // stop any existing animations
 
 // start the new animation
@@ -59,14 +60,21 @@ void StartRingAnimation(byte anim_num){
 
        }
          ring_anim_color = strip.Color(red, green, blue);
+        // RingSolid(ring_anim_color); // actually handled in the animation section
        break;
     break;
 
   case ANIM_RING_STANDBY:
   case ANIM_RING_BACK_TO_FRONT:
-  case ANIM_RING_F2BWIDE:
+
     anim_timers[RINGS].anim_id = anim_num;
   break;
+
+  case ANIM_RING_F2BWIDE:
+    anim_timers[RINGS].anim_id = anim_num;
+    SetTimer( RINGS, 170);
+  break;
+
 
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
@@ -78,7 +86,7 @@ void StartRingAnimation(byte anim_num){
 
   }
 
-   ResetAnimation(RINGS);
+
 }
 
 
@@ -104,23 +112,19 @@ anim_timers[this_timer].frame = 0;
   #ifdef USE_NEOPIXEL
 
     if (TimerUp(RINGS, now)){
-
+      this_frame = GetTimerFrame(RINGS); //int 
       switch(anim_timers[RINGS].anim_id){
         case ANIM_RING_STANDBY:
-          if (ring_anim_step > 255) {
-          ring_anim_step = 0;
-          } else {
-          ring_anim_step++;
-          }
-
           for(pixel_index = RING_START; pixel_index <= RING_END;  pixel_index++) {
-          strip.setPixelColor(pixel_index, Wheel((pixel_index+ ring_anim_step ) & 255));
+            strip.setPixelColor(pixel_index, Wheel((pixel_index+ ( this_frame % 255) ) & 255));
           }
           neopixel_dirty = true;
+           SetTimer( RINGS, 30);
+          AdvanceTimerFrame(RINGS);
         break;
 
         case ANIM_RING_BACK_TO_FRONT:
-        this_frame = GetTimerFrame(RINGS); //int
+        
           for(pixel_index = 0; pixel_index <= 6;  pixel_index++) {
             for (uint8_t j = 0; j <2; j++){
               strip_pos = neopixel_slices[(pixel_index*2) + j];
@@ -239,12 +243,19 @@ void StartWhiteAnimation(byte anim_num){
   dprintln(anim_num);
   anim_timers[WHITE_PIX].anim_id = anim_num;
   int w1, w2, w3;
+  uint16_t i;
     switch (anim_num){
       case ANIM_WHITE_PULSE:
       w1 = 0;
       w2 = 0;
       w3 = 0;
 
+      break;
+      case ANIM_WHITE_RANDOGLOW:
+        for( i=0; i<9; i++ ) {
+          white_pixel_colors[i] = random(255);
+        }
+    
       break;
 
       default:
@@ -262,6 +273,8 @@ byte AnimateWhite(  unsigned long now){
   byte neopixel_dirty = false;
   unsigned int this_frame;
   uint32_t t_color;
+  int rand_step;
+  uint8_t i, j;
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
     this_frame = GetTimerFrame(WHITE_PIX); //int
@@ -272,31 +285,60 @@ byte AnimateWhite(  unsigned long now){
         } else {
               white_anim_color =  strip.Color(0, 0, 0);
         }
+        WhiteSolid(white_anim_color);
         neopixel_dirty =  true;
-        for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
-            strip.setPixelColor(i, white_anim_color);
-        }
-      neopixel_dirty = true;
-      SetTimer( WHITE_PIX, 300);
-      AdvanceTimerFrame(WHITE_PIX);
-    break;
+
+        SetTimer( WHITE_PIX, 300);
+        AdvanceTimerFrame(WHITE_PIX);
+      break;
 
       case ANIM_WHITE_BACK_TO_FRONT:
         if ( this_frame < 3) {
           for(uint16_t i=0; i<3; i++) {
             if (i == this_frame) {
-                white_anim_color = strip.Color(15, 15, 15);
-                dprint( "frame:");
-                dprintln( this_frame);
+              white_anim_color = strip.Color(15, 15, 15);
             } else {
-                white_anim_color = 0;
+              white_anim_color = 0;
             }
             SetWhitePixel(i, white_anim_color);
           }
           neopixel_dirty = true;
-          SetTimer( WHITE_PIX, 2000);
+          SetTimer( WHITE_PIX, 70);
           AdvanceTimerFrame(WHITE_PIX);
+        } else {
+          if ( 3 == this_frame){
+            WhiteSolid(0);
+            neopixel_dirty = true;
+            SetTimer( WHITE_PIX, 20000);
+            AdvanceTimerFrame(WHITE_PIX);
+          }
+
         }
+      break;
+      
+      case ANIM_WHITE_RANDOGLOW:
+       for( i=0; i<3; i++ ) {
+        for( j=0; j<3; j++){   
+           rand_step = 6 - random(13);
+            if ((white_pixel_colors[i] + rand_step) > 255){
+              white_pixel_colors[i] = 255;
+            } else {
+              if ((white_pixel_colors[i] + rand_step) < 0){
+                 white_pixel_colors[i] = 0;
+              } else {
+                white_pixel_colors[i] = white_pixel_colors[i] + rand_step;
+            }
+          }
+          }
+            SetWhitePixel(i, strip.Color(
+              white_pixel_colors[(i*3)]/15.0,
+              white_pixel_colors[(i*3 + 1)]/15.0,
+              white_pixel_colors[(i*3 + 2)]/15.0
+            ));
+      
+      }
+       SetTimer( WHITE_PIX, 60);
+      neopixel_dirty =  true;
       break;
 
     }
@@ -445,22 +487,22 @@ void RingSolid(uint32_t c){
   }
 }
 
+void WhiteSolid(uint32_t color){
+  for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
+    strip.setPixelColor(i, color);
+  }
+}
+
 // to get white pixel from ordinate:
 // pixel 1 = 2-x. pixel 2 = x+3
 void SetWhitePixel(uint8_t x, uint32_t color){
 // inputs:
 // x = ordintate (0-2) 0 is rear of gun
 // color = NeoPixel packed color
-  dprint("SetWhitePixel: x1=");
   uint8_t ord = (WHITE_START + 2 - x);
-  dprint(ord);
   strip.setPixelColor(  ord, color);
   ord =(WHITE_START + 3 + x);
-  dprint(" x2=");
-  dprintln(ord)
   strip.setPixelColor(  ord , color);
-
-
 }
 
 
