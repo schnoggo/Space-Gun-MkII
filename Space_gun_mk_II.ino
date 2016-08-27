@@ -264,9 +264,28 @@ void ServiceSensors(){
       if (trigger_change && (02 == trigger_reading) && ( false == IsFXPlaying()) ){
           //  PlayAnimation(A_BLASTER1);
         //  PlayAnimation(GetGunAnimation(current_mode));
-        StartAudioFX(9);
+
+        switch(current_orientation){
+          case ORIENT_FORWARD:
+            StartAudioFX(9);
+          break;
+
+          case ORIENT_SKY:
+            StartAudioFX(11);
+          break;
+
+          case ORIENT_TIP_IN:
+          StartAudioFX(8);
+          break;
+
+          case ORIENT_TIP_OUT:
+          StartAudioFX(7);
+          break;
+
+        }
+
       }
-    break;
+    break; // MODE_DIAMOND
 
     }
 
