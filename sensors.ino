@@ -116,6 +116,18 @@ boolean UpdateAccelData(){
      ) {
     return_orientation = ORIENT_UP_LEFT;
   }
+
+  // now check explicitly for upper-right
+    if (
+        ((xV < -6) && (xV > -8))
+        &&
+        ((yV < -2) && (yV > -5))
+        &&
+        ((zV < -2.5) && (zV > -6))
+       ) {
+      return_orientation = ORIENT_UP_RIGHT;
+    }
+
   // at this point, return_orientation is our interpretation fo the current readings.
   // Now, deboounce that and return a sensible result to the caller
   RecordOrientation(return_orientation);
@@ -205,6 +217,9 @@ void PrintOrientation(){
       break;
     case ORIENT_UP_LEFT:
       dprintln(F("Up Left"));
+    break;
+    case ORIENT_UP_RIGHT:
+      dprintln(F("Up Right"));
     break;
     }
 
