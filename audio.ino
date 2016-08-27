@@ -14,9 +14,9 @@ pinMode(AUDIO_SENSE, INPUT);
 
 
     if (!sfx.reset()) {
-      dprint("soundboard not found");
+      dprint(F("soundboard not found"));
     } else {
-      dprint("SFX board found");
+      dprint(F("SFX board found"));
 
     ListSFXFiles();
   sfx.playTrack(1);
@@ -75,9 +75,9 @@ void AnimateAudioFX(unsigned long now){
 /*
 uint16_t v;
 if (! (v = sfx.volUp()) ) {
-  dprintln("Failed to adjust");
+  dprintln(F("Failed to adjust"));
 } else {
-  dprint("Volume: "); dprintln(v);
+  dprint(F("Volume: ")); dprintln(v);
 }
 */
 

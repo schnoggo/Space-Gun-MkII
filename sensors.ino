@@ -9,11 +9,11 @@ void InitAccel(){
   accelerometer = Adafruit_MMA8451();
 
 
-  dprintln("Adafruit MMA8451 test!");
+  dprintln(F("Adafruit MMA8451 test!"));
   if (! accelerometer.begin()) {
-    dprintln("Couldnt start");
+    dprintln(F("Couldnt start"));
   }
-  dprintln("MMA8451 found!");
+  dprintln(F("MMA8451 found!"));
   accelerometer.setRange(MMA8451_RANGE_2_G);
   //accelerometer.setRange(MMA8451_RANGE_4_G);
   //accelerometer.setRange(MMA8451_RANGE_8_G);
@@ -27,9 +27,9 @@ void InitAccel(){
 
 
  /* Display the results (acceleration is measured in m/s^2) */
-//  dprint("X: \t"); dprint(sensor_event.acceleration.x); dprint("\t");
-//  dprint("Y: \t"); dprint(sensor_event.acceleration.y); dprint("\t");
-//  dprint("Z: \t"); dprint(sensor_event.acceleration.z); dprint("\t");
+//  dprint(F("X: \t")); dprint(sensor_event.acceleration.x); dprint(F("\t"));
+//  dprint(F("Y: \t")); dprint(sensor_event.acceleration.y); dprint(F("\t"));
+//  dprint(F("Z: \t")); dprint(sensor_event.acceleration.z); dprint(F("\t"));
 
 #endif
 
@@ -59,9 +59,9 @@ boolean UpdateAccelData(){
     // Tell the library to query the accelerometer
     accelerometer.getEvent(&sensor_event);
     /*
-    dprint("X: \t"); dprint(xV); dprint("  ");
-    dprint("Y: \t"); dprint(yV); dprint("  ");
-    dprint("Z: \t"); dprintln(zV); dprint("  ");
+    dprint(F("X: \t")); dprint(xV); dprint(F("  "));
+    dprint(F("Y: \t")); dprint(yV); dprint(F("  "));
+    dprint(F("Z: \t")); dprintln(zV); dprint(F("  "));
    */
 
 
@@ -169,29 +169,29 @@ void PrintOrientation(){
   #ifdef USE_ACCEL
 
      dprint(current_orientation);
-     dprint(": ");
+     dprint(F(": "));
   switch (current_orientation) {
 
     case ORIENT_FORWARD:
-      dprintln("Forward");
+      dprintln(F("Forward"));
       break;
     case ORIENT_GROUND:
-      dprintln("Ground");
+      dprintln(F("Ground"));
       break;
     case ORIENT_TIP_OUT:
-      dprintln("Roll Out");
+      dprintln(F("Roll Out"));
       break;
     case ORIENT_TIP_IN:
-      dprintln("Roll In");
+      dprintln(F("Roll In"));
       break;
     case ORIENT_SKY:
-      dprintln("Sky");
+      dprintln(F("Sky"));
       break;
     case ORIENT_INVERT:
-      dprintln("Invert");
+      dprintln(F("Invert"));
       break;
     case ORIENT_GUNPLAY:
-      dprintln("Waving");
+      dprintln(F("Waving"));
       break;
     }
 

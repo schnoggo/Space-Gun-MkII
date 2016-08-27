@@ -239,7 +239,7 @@ anim_timers[this_timer].frame = 0;
 
 
 void StartWhiteAnimation(byte anim_num){
-  dprint("StartWhiteAnimation");
+  dprint(F("StartWhiteAnimation "));
   dprintln(anim_num);
   anim_timers[WHITE_PIX].anim_id = anim_num;
   int w1, w2, w3;
@@ -253,7 +253,7 @@ void StartWhiteAnimation(byte anim_num){
       break;
       case ANIM_WHITE_RANDOGLOW:
         for( i=0; i<9; i++ ) {
-          white_pixel_colors[i] = random(255);
+          white_pixel_colors[i] = MAX_WHITE_GLOW/2; //random(255);
         }
     
       break;
@@ -274,7 +274,8 @@ byte AnimateWhite(  unsigned long now){
   unsigned int this_frame;
   uint32_t t_color;
   int rand_step;
-  uint8_t i, j;
+  int brightness; // signed
+  uint8_t i, j, k;
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
     this_frame = GetTimerFrame(WHITE_PIX); //int
@@ -318,39 +319,54 @@ byte AnimateWhite(  unsigned long now){
       
       case ANIM_WHITE_RANDOGLOW:
        for( i=0; i<3; i++ ) {
-        for( j=0; j<3; j++){   
-           rand_step = 6 - random(13);
-            if ((white_pixel_colors[i] + rand_step) > 255){
-              white_pixel_colors[i] = 255;
-            } else {
-              if ((white_pixel_colors[i] + rand_step) < 0){
-                 white_pixel_colors[i] = 0;
+        for( j=0; j<3; j++){
+          k = (i*3)+j;
+           rand_step =  2 - random(5);
+             brightness = (int)white_pixel_colors[k] + rand_step;
+              if (brightness > MAX_WHITE_GLOW){
+               brightness = MAX_WHITE_GLOW;
               } else {
-                white_pixel_colors[i] = white_pixel_colors[i] + rand_step;
+                if (brightness < 0 ){
+                 brightness = 0;
+              }
             }
-          }
-          }
+            white_pixel_colors[k] = brightness;
+          } // step though the individual colors
+          // Collect the 3 values into a packed color:
             SetWhitePixel(i, strip.Color(
-              white_pixel_colors[(i*3)]/15.0,
-              white_pixel_colors[(i*3 + 1)]/15.0,
-              white_pixel_colors[(i*3 + 2)]/15.0
+              white_pixel_colors[i*3 + 0],
+              white_pixel_colors[i*3 + 1],
+              white_pixel_colors[i*3 + 2]
             ));
       
       }
-       SetTimer( WHITE_PIX, 60);
+      // all debugging:
+      rand_step = 0;
+      for( i=0; i<9; i++ ) {
+        if (white_pixel_colors[i] > MAX_WHITE_GLOW){
+          rand_step = 1;
+        }
+      }
+      if(rand_step){
+        for( i=0; i<3; i++ ) {
+          for( j=0; j<3; j++){
+            k = (i*3)+j;
+            dprint(k);
+            dprint(F(": "));
+            dprint(white_pixel_colors[k]);
+             dprint(F(",  "));
+            
+          }
+          dprintln(" ")
+        }
+      }
+      
+      SetTimer( WHITE_PIX, 60);
       neopixel_dirty =  true;
       break;
 
     }
   }
-
-
-
-
-
-
-
-
 
 
 
@@ -501,26 +517,9 @@ void SetWhitePixel(uint8_t x, uint32_t color){
 // color = NeoPixel packed color
   uint8_t ord = (WHITE_START + 2 - x);
   strip.setPixelColor(  ord, color);
-  ord =(WHITE_START + 3 + x);
+  ord = (WHITE_START + 3 + x);
   strip.setPixelColor(  ord , color);
 }
-
-
-
-// Fill the dots one after the other with a color
-void NeoWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      if ( 0 != wait ){
-        strip.show();
-        safe_delay(wait);
-      }
-  }
-  if (0 == wait){
- //   strip.show();
-  }
-}
-
 
 
 uint8_t NormalizeRingPos(uint8_t realPos){

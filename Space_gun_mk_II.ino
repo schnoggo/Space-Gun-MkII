@@ -30,6 +30,7 @@
 #define MODE_NRG_BLADE 6
 
 
+
 #define ANIM_RING_DEMO 0
 #define ANIM_RING_STANDBY 1
 #define ANIM_RING_FIRE_LOW 2
@@ -147,8 +148,7 @@ uint32_t white_anim_color=0;
 int white_anim_dir = 1;
 byte alpha_squence_index = '!';
 uint8_t white_pixel_colors[9]; //3 sets of "rgb"
-
-
+#define MAX_WHITE_GLOW 200
 
 
 uint16_t ring_anim_step = 0;
@@ -204,7 +204,7 @@ void ServiceSensors(){
   }
   switch (current_mode) {
     case MODE_CONFIG:
-      if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
+      if (trigger_change && (02 == trigger_reading) && (ORIENT_GROUND == current_orientation) ){
         SetNewMode(selected_mode);
       }
       if( (ORIENT_FORWARD == current_orientation)
@@ -212,10 +212,10 @@ void ServiceSensors(){
           && (trigger_change)
 
         ){
-          dprintln("HELP");
+
           selected_mode++;
-        if (selected_mode > MODE_TREK) {selected_mode = MODE_LON01;}
-        dprint("selected_mode: ");
+        if (selected_mode > MODE_DIAMOND) {selected_mode = MODE_LON01;}
+        dprint(F("selected_mode: "));
         dprintln(selected_mode);
         SetSeg14Value(selected_mode);
         //  PlayAnimation(A_CONFIG);
@@ -236,29 +236,40 @@ void ServiceSensors(){
           //  PlayAnimation(A_BLASTER1);
           PlayAnimation(GetGunAnimation(current_mode));
           }
-        break;
+          break;
 
-        case ORIENT_GROUND:
-          if (02 == trigger_reading){
+         case ORIENT_GROUND:
+           if (trigger_change && (02 == trigger_reading) ){
             SetNewMode(MODE_CONFIG);
-          }
-        break;
-      }
 
-    break; //MODE_LON01, MODE_TREK, MODE_STAR_WARS
+           }
+         break;
 
+
+
+       }
+        break; //MODE_LON01, MODE_TREK, MODE_STAR_WARS
 
     case MODE_DEMO:
       if (orientation_changed){
         StartRingAnimation(ANIM_RING_DEMO);
       }
-    
-    
+
       if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
         SetNewMode(MODE_LON01);
       }
     break;
+
+    case MODE_DIAMOND:
+      if (trigger_change && (02 == trigger_reading) && ( false == IsFXPlaying()) ){
+          //  PlayAnimation(A_BLASTER1);
+        //  PlayAnimation(GetGunAnimation(current_mode));
+        StartAudioFX(9);
+      }
+    break;
+
     }
+
 
   }
 
@@ -288,9 +299,9 @@ uint8_t GetGunAnimation(byte which_mode){
 
   }
   /*
-  dprint("animation: ");
+  dprint(F("animation: "));
   dprint(retVal);
-  dprint("  mode: ");
+  dprint(F("  mode: "));
   dprintln(which_mode);
   */
   return retVal;
@@ -300,7 +311,7 @@ uint8_t GetGunAnimation(byte which_mode){
 // trigger:
   boolean trigger_change = UpdateTriggerState();
   if (trigger_change){
-    dprint("trigger: ");
+    dprint(F("trigger: "));
     dprintln(trigger_reading);
     if (2 == trigger_reading){
       StartAudioFX(2);

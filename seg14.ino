@@ -36,8 +36,8 @@ void StartSeg14Animation(byte anim_num){
       LED_14_seg.writeDisplay();
   /*  LED_14_seg.writeDigitAscii(0, "9");
     LED_14_seg.writeDigitAscii(1, "9");
-    dprint("anim14: ");
-    dprintln("ANIM14_NUM");
+    dprint(F("anim14: "));
+    dprintln(F("ANIM14_NUM"));
 */
     break;
     case ANIM14_MSG:
