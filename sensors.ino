@@ -106,6 +106,16 @@ boolean UpdateAccelData(){
 
   }
 
+// now check explicitly for upper-left
+  if (
+      ((xV < -5) && (xV > -7))
+      &&
+      ((yV < -3) && (yV > -6))
+      &&
+      ((zV > 5) && (zV < 7))
+     ) {
+    return_orientation = ORIENT_UP_LEFT;
+  }
   // at this point, return_orientation is our interpretation fo the current readings.
   // Now, deboounce that and return a sensible result to the caller
   RecordOrientation(return_orientation);
@@ -193,6 +203,9 @@ void PrintOrientation(){
     case ORIENT_GUNPLAY:
       dprintln(F("Waving"));
       break;
+    case ORIENT_UP_LEFT:
+      dprintln(F("Up Left"));
+    break;
     }
 
 #endif

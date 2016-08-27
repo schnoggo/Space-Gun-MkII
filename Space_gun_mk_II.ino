@@ -96,6 +96,7 @@ unsigned long last_accel_reading = 0;
 #define ORIENT_INVERT  5
 #define ORIENT_GUNPLAY 6
 #define ORIENT_BOUNDARY 7
+#define ORIENT_UP_LEFT 8
 
 #define ACCEL_SAMPLE_RATE 30
 #define ORIENT_HISTORY_SIZE 10
@@ -280,6 +281,10 @@ void ServiceSensors(){
 
           case ORIENT_TIP_OUT:
           StartAudioFX(7);
+          break;
+
+          case ORIENT_UP_LEFT:
+          StartAudioFX(6);
           break;
 
         }
