@@ -1,13 +1,11 @@
 // Space Gun MkII
 // Lon Koenig 2016
 
-#include "shared.h" // bring in libraries, declare globals for libraries, define macros
-
-
+#include "shared.h" // bring in libraries, declare globals for libraries, define macrose
 // Set up the IO pins:
 #define NEO_PIXEL_DATA_PIN 3
 #define NEOPIXEL_WHITE_DATA_PIN 8
-#define TRIGGER_PIN 0
+#define TRIGGER_PIN 1
 #define AUDIO_SENSE 9
 
 //  SoftwareSerial Rest, RX & TX pins:
@@ -37,6 +35,7 @@
 #define ANIM_RING_FIRE_HI 3
 #define ANIM_RING_BACK_TO_FRONT 4
 #define ANIM_RING_F2BWIDE 5
+#define ANIM_RING_SOUNDBOARD 6
 
 
 uint8_t neopixel_slices[15] = {
@@ -57,6 +56,8 @@ uint8_t neopixel_slices[15] = {
 #define RING_END 23 // last color neopixel in rings
 #define WHITE_START 24 // first white (W,W,W) Neopixel
 #define WHITE_END 29 // last white neopixel
+#define NOSE_START 30 //first RGB pixel in nose cone
+#define NOSE_END 36 // last RGB pixel in nose cone
 #define WHITE_ANIM_STEP_SIZE 50
 #define RING_OFFSET_LEFT 0
 #define RING_OFFSET_RIGHT 0
@@ -74,6 +75,9 @@ uint8_t neopixel_slices[15] = {
 #define ANIM_WHITE_SOLID 1
 #define ANIM_WHITE_BACK_TO_FRONT 2
 #define ANIM_WHITE_RANDOGLOW 3
+
+#define ANIM_NOSE_DEMO 0
+
 
 //Global vars:
 int trigger_reading;
@@ -117,8 +121,9 @@ unsigned long timer_audioFX = 0;
 #define SEG14 0
 #define RINGS 1
 #define WHITE_PIX 2
-#define AUDIO 3
-AnimTimer anim_timers[4];
+#define NOSE 3
+#define AUDIO 4
+AnimTimer anim_timers[5];
 
 // defined named for animation groups below
 #define A_DEMO 0
@@ -127,16 +132,18 @@ AnimTimer anim_timers[4];
 #define A_BLASTER3 3
 #define A_CONFIG 4
 #define PULSE_BLAST 5
+#define A_SOUNDBOARD 6
 #define NO_ANIM 0xff
 
-AnimGroup animations[6]{
+AnimGroup animations[7]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO , 0xff, ANIM_WHITE_SOLID, ANIM14_RAND}, // A_DEMO
-  { ANIM_RING_FIRE_LOW ,01 , ANIM_WHITE_PULSE, ANIM14_MSG},  // A_BLASTER1 (SW)_
-  { ANIM_RING_BACK_TO_FRONT , 02, ANIM_WHITE_RANDOGLOW, ANIM14_DEMO},  // A_BLASTER2
-  { ANIM_RING_FIRE_HI , 03, ANIM_WHITE_PULSE, ANIM14_RAND},  // A_BLASTER3
-  { ANIM_RING_DEMO, 0xff, ANIM_WHITE_RANDOGLOW, ANIM14_NUM}, // A_CONFIG
-  { ANIM_RING_F2BWIDE, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
+  { ANIM_RING_DEMO,          0xff, ANIM_WHITE_SOLID,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // A_DEMO
+  { ANIM_RING_FIRE_LOW,      01 ,  ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // A_BLASTER1 (SW)_
+  { ANIM_RING_BACK_TO_FRONT, 02,   ANIM_WHITE_RANDOGLOW, ANIM14_DEMO,    ANIM_NOSE_DEMO},  // A_BLASTER2
+  { ANIM_RING_FIRE_HI,       03,   ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // A_BLASTER3
+  { ANIM_RING_DEMO,          0xff, ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // A_CONFIG
+  { ANIM_RING_F2BWIDE,       03,   ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // PULSE_BLAST
+  { ANIM_RING_SOUNDBOARD,    0xff, ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO}
 //  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
 };
 
@@ -253,6 +260,7 @@ void ServiceSensors(){
         break; //MODE_LON01, MODE_TREK, MODE_STAR_WARS
 
     case MODE_DEMO:
+    // to exit demo, aim at sky and pull trigger
       if (orientation_changed){
         StartRingAnimation(ANIM_RING_DEMO);
       }
@@ -292,7 +300,7 @@ void ServiceSensors(){
             StartAudioFX(10);
           break;
 
-          
+
 
         }
 

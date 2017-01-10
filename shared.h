@@ -6,6 +6,7 @@
 #define USE_SEG14
 #define USE_ACCEL
 #define USE_AUDIOFX
+#define USE_NOSE
 
 // Libraries:
 #include <Wire.h>
@@ -65,6 +66,7 @@ typedef struct {
   uint8_t sound; // sound track #
   uint8_t white; // white LED animation ID
   uint8_t seg14; // 14-segment display animation ID
+  uint8_t nose;
 } AnimGroup;
 
 // macros:

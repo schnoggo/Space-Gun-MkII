@@ -77,6 +77,11 @@ uint8_t seg14; // 14-segment display animation ID
       StartWhiteAnimation(t_anim);
     }
 
+    t_anim = animations[anim_num].nose;
+    if ( NO_ANIM != t_anim) {
+      StartNoseAnimation(t_anim);
+    }
+
     t_anim = animations[anim_num].seg14;
     if ( NO_ANIM != t_anim) {
         if (ANIM14_MSG == t_anim){
@@ -90,6 +95,7 @@ uint8_t seg14; // 14-segment display animation ID
 void SetNewMode(byte new_mode){
   // globals:
   // selected_mode - currently selected mode in config mode
+  // prev_mode - the previous, duh
   dprint("new mode: ");
   dprintln(new_mode);
   prev_mode = current_mode;
@@ -108,6 +114,10 @@ void SetNewMode(byte new_mode){
 
     case MODE_DEMO:
       PlayAnimation(A_BLASTER2);
+    break;
+
+    case MODE_DIAMOND:
+      PlayAnimation(A_SOUNDBOARD);
     break;
   }
 

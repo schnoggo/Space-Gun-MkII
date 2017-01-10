@@ -6,7 +6,7 @@ void InitNeoPixels(){
 // strip
   // Setup Neopixels:
   #ifdef USE_NEOPIXEL
-  strip = Adafruit_NeoPixel(WHITE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
+  strip = Adafruit_NeoPixel(NOSE_END+1, NEO_PIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
   #endif
@@ -78,9 +78,11 @@ void StartRingAnimation(byte anim_num){
 
   case ANIM_RING_FIRE_LOW:
   case ANIM_RING_FIRE_HI:
+  case ANIM_RING_SOUNDBOARD:
     ring_anim_color = strip.Color(0, 0 , 0);
     anim_timers[RINGS].anim_id = anim_num;
     RingSolid(ring_anim_color);
+    UpdateNeopixels(true);
   break;
 
 
@@ -112,7 +114,7 @@ anim_timers[this_timer].frame = 0;
   #ifdef USE_NEOPIXEL
 
     if (TimerUp(RINGS, now)){
-      this_frame = GetTimerFrame(RINGS); //int 
+      this_frame = GetTimerFrame(RINGS); //int
       switch(anim_timers[RINGS].anim_id){
         case ANIM_RING_STANDBY:
           for(pixel_index = RING_START; pixel_index <= RING_END;  pixel_index++) {
@@ -124,7 +126,7 @@ anim_timers[this_timer].frame = 0;
         break;
 
         case ANIM_RING_BACK_TO_FRONT:
-        
+
           for(pixel_index = 0; pixel_index <= 6;  pixel_index++) {
             for (uint8_t j = 0; j <2; j++){
               strip_pos = neopixel_slices[(pixel_index*2) + j];
@@ -201,6 +203,12 @@ anim_timers[this_timer].frame = 0;
 
         break;
 
+        case ANIM_RING_SOUNDBOARD:
+          RingSolid(ring_anim_color);
+          neopixel_dirty = true;
+          SetTimer( RINGS, 3000);
+        break;
+
 
         case ANIM_RING_FIRE_LOW:
         this_frame = GetTimerFrame(RINGS); //int
@@ -255,7 +263,7 @@ void StartWhiteAnimation(byte anim_num){
         for( i=0; i<9; i++ ) {
           white_pixel_colors[i] = MAX_WHITE_GLOW/2; //random(255);
         }
-    
+
       break;
 
       default:
@@ -316,7 +324,7 @@ byte AnimateWhite(  unsigned long now){
 
         }
       break;
-      
+
       case ANIM_WHITE_RANDOGLOW:
        for( i=0; i<3; i++ ) {
         for( j=0; j<3; j++){
@@ -338,7 +346,7 @@ byte AnimateWhite(  unsigned long now){
               white_pixel_colors[i*3 + 1],
               white_pixel_colors[i*3 + 2]
             ));
-      
+
       }
       // all debugging:
       rand_step = 0;
@@ -355,24 +363,68 @@ byte AnimateWhite(  unsigned long now){
             dprint(F(": "));
             dprint(white_pixel_colors[k]);
              dprint(F(",  "));
-            
+
           }
           dprintln(" ")
         }
       }
-      
+
       SetTimer( WHITE_PIX, 60);
       neopixel_dirty =  true;
       break;
 
     }
+
+    return neopixel_dirty;
+  }
+  #endif
+}
+
+
+// nose cone RGB LED animations
+void StartNoseAnimation(byte anim_num){
+  // globals:
+  // anim_timers[RINGS].anim_id
+  // inputs:
+  // anim_num which animation to play
+
+  dprint(F("StartNoseAnimation "));
+  dprintln(anim_num);
+  anim_timers[NOSE].anim_id = anim_num;
+
+
+}
+
+byte AnimateNose(  unsigned long now){
+  byte neopixel_dirty = false;
+  unsigned int this_frame;
+  uint32_t t_color;
+  int rand_step;
+  int brightness; // signed
+  uint8_t i, j, k;
+
+  if (TimerUp(NOSE, now)){
+    this_frame = GetTimerFrame(NOSE); //int
+    switch(anim_timers[NOSE].anim_id){
+      case ANIM_NOSE_DEMO:
+      j = NOSE_START +   random(NOSE_END - NOSE_START);
+      strip.setPixelColor( j, strip.Color(random(255), random(255), random(255)));
+      neopixel_dirty = true;
+      SetTimer( NOSE, 30);
+      if (this_frame < 3){
+        AdvanceTimerFrame(NOSE);
+      } else {
+        ResetAnimation(NOSE);
+      break;
+    }
+
+
   }
 
 
+  return neopixel_dirty;
 
-
-
-
+}
 
   /*
       if (this_frame < 255){
@@ -434,8 +486,7 @@ byte AnimateWhite(  unsigned long now){
 
     } // timer
 */
-    #endif
-    return neopixel_dirty;
+
 
 }
 
@@ -508,6 +559,15 @@ void WhiteSolid(uint32_t color){
     strip.setPixelColor(i, color);
   }
 }
+
+void NoseSolid(uint32_t color){
+  for(uint16_t i=NOSE_START; i<=NOSE_END; i++) {
+    strip.setPixelColor(i, color);
+  }
+}
+
+//   ring_anim_color = strip.Color(red, green, blue);
+
 
 // to get white pixel from ordinate:
 // pixel 1 = 2-x. pixel 2 = x+3
