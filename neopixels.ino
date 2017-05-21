@@ -261,7 +261,7 @@ void StartWhiteAnimation(byte anim_num){
       break;
       case ANIM_WHITE_RANDOGLOW:
         for( i=0; i<9; i++ ) {
-          white_pixel_colors[i] = MAX_WHITE_GLOW/2; //random(255);
+          white_pixel_colors[i] = 20; //random(255);
         }
 
       break;

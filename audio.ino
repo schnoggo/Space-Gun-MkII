@@ -19,7 +19,8 @@ pinMode(AUDIO_SENSE, INPUT);
       dprint(F("SFX board found"));
 
     ListSFXFiles();
-  sfx.playTrack(1);
+  sfx.playTrack(SND_TOS_01);
+
 
 
     }
@@ -39,6 +40,15 @@ void StartAudioFX(byte anim_num){
 
 }
 
+void InteruptAudioFX(byte anim_num){
+  if (IsFXPlaying()){
+    sfx.stop();
+
+  }
+  StartAudioFX(anim_num);
+
+
+}
 
 
 void StopAudioFX(){

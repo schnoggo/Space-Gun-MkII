@@ -1,17 +1,17 @@
 // Space Gun MkII
-// Lon Koenig 2016
+// Lon Koenig 2016-2017
 
 #include "shared.h" // bring in libraries, declare globals for libraries, define macrose
 // Set up the IO pins:
 #define NEO_PIXEL_DATA_PIN 3
 #define NEOPIXEL_WHITE_DATA_PIN 8
 #define TRIGGER_PIN 1
-#define AUDIO_SENSE 9
+#define AUDIO_SENSE 8
 
 //  SoftwareSerial Rest, RX & TX pins:
-#define SFX_RST 5
-#define SFX_TX 12
-#define SFX_RX 11
+#define SFX_RST 11
+#define SFX_TX 10
+#define SFX_RX 9
 
 
 // Other constants:
@@ -36,6 +36,28 @@
 #define ANIM_RING_BACK_TO_FRONT 4
 #define ANIM_RING_F2BWIDE 5
 #define ANIM_RING_SOUNDBOARD 6
+
+#define SND_TOS_01 1
+#define SND_TOS_02 2
+#define SND_TOS_03 3
+#define SND_TNG_01 4
+#define SND_TNG_02 5
+#define SND_TNG_03 6
+#define SND_SW_01 7
+#define SND_SW_02 8
+#define SND_SW_03 9
+#define SND_NERD_01 10
+#define SND_NERD_02 11
+#define SND_NERD_03 12
+#define SND_NERD_04 13
+#define SND_NERD_05 14
+#define SND_NERD_06 15
+#define SND_NERD_07 16
+#define SND_NERD_08 17
+#define SND_NONE 0xff
+
+
+
 
 
 uint8_t neopixel_slices[15] = {
@@ -137,11 +159,11 @@ AnimTimer anim_timers[5];
 
 AnimGroup animations[7]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO,          0xff, ANIM_WHITE_SOLID,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // A_DEMO
+  { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // A_DEMO
   { ANIM_RING_FIRE_LOW,      01 ,  ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // A_BLASTER1 (SW)_
   { ANIM_RING_BACK_TO_FRONT, 02,   ANIM_WHITE_RANDOGLOW, ANIM14_DEMO,    ANIM_NOSE_DEMO},  // A_BLASTER2
   { ANIM_RING_FIRE_HI,       03,   ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // A_BLASTER3
-  { ANIM_RING_DEMO,          0xff, ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // A_CONFIG
+  { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // A_CONFIG
   { ANIM_RING_F2BWIDE,       03,   ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // PULSE_BLAST
   { ANIM_RING_SOUNDBOARD,    0xff, ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO}
 //  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
@@ -271,33 +293,33 @@ void ServiceSensors(){
     break;
 
     case MODE_DIAMOND:
-      if (trigger_change && (02 == trigger_reading) && ( false == IsFXPlaying()) ){
+      if (trigger_change && (02 == trigger_reading) ){
           //  PlayAnimation(A_BLASTER1);
         //  PlayAnimation(GetGunAnimation(current_mode));
 
         switch(current_orientation){
           case ORIENT_FORWARD:
-            StartAudioFX(9);
+            InteruptAudioFX(16);
           break;
 
           case ORIENT_SKY:
-            StartAudioFX(11);
+            InteruptAudioFX(11);
           break;
 
           case ORIENT_TIP_IN:
-          StartAudioFX(8);
+          InteruptAudioFX(14);
           break;
 
           case ORIENT_TIP_OUT:
-          StartAudioFX(7);
+          InteruptAudioFX(13);
           break;
 
           case ORIENT_UP_LEFT:
-          StartAudioFX(6);
+          InteruptAudioFX(15);
           break;
 
           case ORIENT_UP_RIGHT:
-            StartAudioFX(10);
+            InteruptAudioFX(16);
           break;
 
 
