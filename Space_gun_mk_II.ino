@@ -157,26 +157,39 @@ AnimTimer anim_timers[5];
 #define A_CONFIG 4
 #define PULSE_BLAST 5
 #define A_SOUNDBOARD 6
-#define A_TOS_01 6
-#define A_TOS_02 6
-#define A_TOS_03 6
-
+#define A_TOS_01 7
+#define A_TOS_02 8
+#define A_TOS_03 9
+#define A_TNG_01 10
+#define A_TNG_02 11
+#define A_TNG_03 12
+#define A_SW_01 13
+#define A_SW_02 14
+#define A_SW_03 15
 #define NO_ANIM 0xff
 
 
-AnimGroup animations[10]{
+AnimGroup animations[16]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
-  { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // A_DEMO
-  { ANIM_RING_FIRE_LOW,      01 ,  ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // A_BLASTER1 (SW)_
-  { ANIM_RING_BACK_TO_FRONT, 02,   ANIM_WHITE_RANDOGLOW, ANIM14_DEMO,    ANIM_NOSE_DEMO},  // A_BLASTER2
-  { ANIM_RING_FIRE_HI,       03,   ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // A_BLASTER3
-  { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // A_CONFIG
-  { ANIM_RING_F2BWIDE,       03,   ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // PULSE_BLAST
-  { ANIM_RING_SOUNDBOARD,    0xff, ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO},
-  { ANIM_RING_FIRE_LOW,       SND_TOS_01,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // Trek TOS 01
-  { ANIM_RING_FIRE_HI,       SND_TOS_02,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // Trek TOS 02
-  { ANIM_RING_BACK_TO_FRONT,       SND_TOS_03,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO} // Trek TOS 03
+  { ANIM_RING_DEMO,          SND_NONE,   ANIM_WHITE_RANDOGLOW,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // 00 A_DEMO
+  { ANIM_RING_FIRE_LOW,      01 ,        ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // 01 A_BLASTER1 (SW)_
+  { ANIM_RING_BACK_TO_FRONT, 02,         ANIM_WHITE_RANDOGLOW, ANIM14_DEMO,    ANIM_NOSE_DEMO},  // 02 A_BLASTER2
+  { ANIM_RING_FIRE_HI,       03,         ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // 03 A_BLASTER3
+  { ANIM_RING_DEMO,          SND_NONE,   ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // 04  A_CONFIG
+  { ANIM_RING_F2BWIDE,       03,         ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // 05 PULSE_BLAST
+  { ANIM_RING_SOUNDBOARD,    0xff,       ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO}, // 06 A_SOUNDBOARD
 
+  { ANIM_RING_FIRE_LOW,      SND_TOS_01, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 07 Trek TOS 01
+  { ANIM_RING_FIRE_HI,       SND_TOS_02, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 08 Trek TOS 02
+  { ANIM_RING_BACK_TO_FRONT, SND_TOS_03, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 09 Trek TOS 03
+
+  { ANIM_RING_FIRE_LOW,      SND_TNG_01, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 10 Trek TNG 01
+  { ANIM_RING_FIRE_HI,       SND_TNG_02, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 11 Trek TNG 02
+  { ANIM_RING_BACK_TO_FRONT, SND_TNG_03, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 12 Trek TNG 03
+
+  { ANIM_RING_FIRE_LOW,      SND_SW_01, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 13 Star Wars 01
+  { ANIM_RING_FIRE_HI,       SND_SW_02, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // 14 Star Wars 02
+  { ANIM_RING_BACK_TO_FRONT, SND_SW_03, ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO} // 15 Star Wars 03
 
 //  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
 };
@@ -259,7 +272,7 @@ void ServiceSensors(){
 
           case ORIENT_FORWARD:
             selected_mode++;
-            if (selected_mode > MODE_DIAMOND) {selected_mode = MODE_LON01;}
+            if (selected_mode > MODE_TREK_TNG) {selected_mode = MODE_LON01;}
             dprint(F("config:selected_mode: "));
             dprintln(selected_mode);
             SetSeg14Value(selected_mode);
@@ -365,12 +378,17 @@ uint8_t GetGunAnimation(byte which_mode, byte gun_index){
 
     case MODE_STAR_WARS:
     //  retVal = A_BLASTER1;
-    retVal = A_TOS_01 - 1 + gun_index;
+    retVal = A_SW_01 - 1 + gun_index;
     break;
 
     case MODE_TREK_TOS:
     retVal = A_TOS_01 - 1 + gun_index;
   //    retVal = A_BLASTER2;
+
+    break;
+
+    case MODE_TREK_TNG:
+    retVal = A_TNG_01 - 1 + gun_index;
 
     break;
 
