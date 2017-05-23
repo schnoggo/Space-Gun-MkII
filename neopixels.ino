@@ -388,8 +388,8 @@ void StartNoseAnimation(byte anim_num){
   // inputs:
   // anim_num which animation to play
 
-  dprint(F("StartNoseAnimation "));
-  dprintln(anim_num);
+//  dprint(F("StartNoseAnimation "));
+//  dprintln(anim_num);
   anim_timers[NOSE].anim_id = anim_num;
 
 

@@ -19,9 +19,7 @@ pinMode(AUDIO_SENSE, INPUT);
       dprint(F("SFX board found"));
 
     ListSFXFiles();
-  sfx.playTrack(SND_TOS_01);
-
-
+  sfx.playTrack(F("START.OGG   "));
 
     }
 

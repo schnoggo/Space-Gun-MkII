@@ -38,6 +38,7 @@
 #define ANIM_RING_F2BWIDE 5
 #define ANIM_RING_SOUNDBOARD 6
 
+#define SND_STARTUP 0
 #define SND_TOS_01 1
 #define SND_TOS_02 2
 #define SND_TOS_03 3
@@ -103,12 +104,12 @@ uint8_t neopixel_slices[15] = {
 
 
 //Global vars:
-int trigger_reading;
-int last_trigger_reading = -1;
-uint8_t trigger_value = 0;
+uint8_t trigger_position;
+uint8_t last_trigger_position = 0xff;
+boolean new_trigger_pull = false;
 unsigned long trigger_timer = 0;
 
-#define TRIGGER_SAMPLE_RATE 20
+#define TRIGGER_SAMPLE_RATE 120
 #define TRIGGER_RANGE 1024/3
 
 uint8_t current_orientation = 99;
@@ -239,83 +240,77 @@ void ServiceSensors(){
   Update global sensor values
   also handles mode changes
 */
-  boolean trigger_change = UpdateTriggerState();
+  UpdateTriggerState(); // no results - just updates state in the background
+  uint8_t trigger = GetTriggerPosition(false); // not full-auto, returns [ 0 | 1 | 2 ]
   boolean orientation_changed = UpdateAccelData();
   if (orientation_changed){
     PrintOrientation();
   }
+  if ( 0 < trigger ){
+
   switch (current_mode) {
-    case MODE_CONFIG:
-      if (trigger_change && (02 == trigger_reading) && (ORIENT_GROUND == current_orientation) ){
-        SetNewMode(selected_mode);
-      }
-      if( (ORIENT_FORWARD == current_orientation)
-          && (02 == trigger_reading)
-          && (trigger_change)
 
-        ){
+      case MODE_CONFIG:
+        switch (current_orientation){
 
-          selected_mode++;
-        if (selected_mode > MODE_DIAMOND) {selected_mode = MODE_LON01;}
-        dprint(F("selected_mode: "));
-        dprintln(selected_mode);
-        SetSeg14Value(selected_mode);
-        //  PlayAnimation(A_CONFIG);
-        StartSeg14Animation(ANIM14_NUM);
+          case ORIENT_GROUND:
+            SetNewMode(selected_mode); // Exit config and go to new mode
+          break;
 
-      }
-
+          case ORIENT_FORWARD:
+            selected_mode++;
+            if (selected_mode > MODE_DIAMOND) {selected_mode = MODE_LON01;}
+            dprint(F("config:selected_mode: "));
+            dprintln(selected_mode);
+            SetSeg14Value(selected_mode);
+            //  PlayAnimation(A_CONFIG);
+            StartSeg14Animation(ANIM14_NUM);
+          break;
+        }
     break;
 
 
     case MODE_LON01:
     case MODE_STAR_WARS:
+    case MODE_TREK_TNG:
     case MODE_TREK_TOS:
       switch(current_orientation){
         case ORIENT_FORWARD:
-            if (trigger_change && ( false == IsFXPlaying() )){
-                switch(trigger_reading){
-                    case 1:
-                    case 2:
-                    PlayAnimation(GetGunAnimation(current_mode, trigger_reading));
-                    break;
-
-                }
-            }
-
-         case ORIENT_TIP_IN:
-         case ORIENT_TIP_OUT:
-           if (trigger_change && ( false == IsFXPlaying() )){
-              PlayAnimation(GetGunAnimation(current_mode, 3));
+          if (false == IsFXPlaying()){
+            PlayAnimation(GetGunAnimation(current_mode, trigger));
           }
-         break;
+        break;
 
-         case ORIENT_GROUND:
-           if (trigger_change && (02 == trigger_reading) ){
-            SetNewMode(MODE_CONFIG);
+       case ORIENT_TIP_IN:
+       case ORIENT_TIP_OUT:
+         if (false == IsFXPlaying() ){
+            PlayAnimation(GetGunAnimation(current_mode, 3));
+        }
+       break;
 
-           }
-         break;
-
-
+       case ORIENT_GROUND:
+         if ( 02 == trigger){
+          SetNewMode(MODE_CONFIG); // aim at ground pull trigger to enter config
+         }
+       break;
 
        }
-        break; //MODE_LON01, MODE_TREK_TOS, MODE_STAR_WARS
-    case MODE_TREK_TNG:
+    break; //MODE_LON01, MODE_TREK_TOS, MODE_STAR_WARS, MODE_TREK_TNG
+
 
     case MODE_DEMO:
-    // to exit demo, aim at sky and pull trigger
+      // to exit demo, aim at sky and pull trigger
       if (orientation_changed){
         StartRingAnimation(ANIM_RING_DEMO);
       }
 
-      if( (ORIENT_SKY == current_orientation) && (02 == trigger_reading)){
+      if( ORIENT_SKY == current_orientation){
         SetNewMode(MODE_LON01);
       }
     break;
 
     case MODE_DIAMOND:
-      if (trigger_change && (02 == trigger_reading) ){
+      if ( (02 == trigger) ){
           //  PlayAnimation(A_BLASTER1);
         //  PlayAnimation(GetGunAnimation(current_mode));
 
@@ -344,17 +339,14 @@ void ServiceSensors(){
             InteruptAudioFX(16);
           break;
 
-
-
         }
 
       }
     break; // MODE_DIAMOND
 
     }
-
-
   }
+}
 
 uint8_t GetGunAnimation(byte which_mode, byte gun_index){
   //Inputs:
@@ -392,35 +384,6 @@ uint8_t GetGunAnimation(byte which_mode, byte gun_index){
   return retVal;
 
 }
-/*
-// trigger:
-  boolean trigger_change = UpdateTriggerState();
-  if (trigger_change){
-    dprint(F("trigger: "));
-    dprintln(trigger_reading);
-    if (2 == trigger_reading){
-      StartAudioFX(2);
-    } else {
-      StopAudioFX();
-    }
-}
-
-  boolean orientation_changed = UpdateAccelData();
-
-  if (orientation_changed){
-    PrintOrientation();
-    StartRingAnimation(ANIM_RING_DEMO);
-    if (ORIENT_FORWARD == current_orientation) {
-    //  SetSeg14Value(10);
-    //  StartSeg14Animation(ANIM14_NUM);
-      SetSeg14Msg("WE  LOVE  ADAFRUIT   ");
-      StartSeg14Animation(ANIM14_MSG);
-    } else {
-      StartSeg14Animation(ANIM14_DEMO);
-    }
-
-  }
-*/
 
 
 void ServiceLights(){

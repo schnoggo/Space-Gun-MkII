@@ -230,41 +230,65 @@ void PrintOrientation(){
 
 
 void InitTrigger(){
-  trigger_reading = 0;
-  last_trigger_reading = -1;
-  trigger_value =  0;
+  // globals:
+  trigger_position = 0;
+  last_trigger_position = -1;
 
 }
-
-boolean UpdateTriggerState(){
-  boolean retVal = false;
+/*
+ * Monitors trigger input and updated position values
+ * Called as a background function
+ */
+void UpdateTriggerState(){
+// globals:
+//   trigger_timer - use to debounce the readings a little
+//   trigger_position - current trigger position
+//   last_trigger_position
+//   new_trigger_pull
   unsigned long now = millis();
   // maybe add a throttle?
   if (trigger_timer < now ){
 
     int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
-
-
-    temp_trigger = temp_trigger/(TRIGGER_RANGE);
-    if (temp_trigger !=  trigger_reading){
-    //   dprintln(temp_trigger);
-      last_trigger_reading = trigger_reading;
-      trigger_reading = temp_trigger;
-
-      retVal =  true;
+    temp_trigger = temp_trigger/(TRIGGER_RANGE); // reduce to position
+    if (temp_trigger !=  trigger_position){
+        dprint("trigger: ");
+        dprintln(temp_trigger);
+    // trigger has changed position:
+      if (trigger_position < temp_trigger){
+        new_trigger_pull = true;
+      } else {
+        new_trigger_pull = false;
+      }
+      last_trigger_position = trigger_position;
+      trigger_position = temp_trigger;
     }
     trigger_timer =  now + TRIGGER_SAMPLE_RATE;
   }
+}
+/*
+* Returns NEW trigger position
+* 0 = trigger not pulled (or unchanging)
+* otherwise new trigger position [ 1 | 2 ]
+* parm auto-repeat: clears the new_trigger_pull flag
+*/
+uint8_t GetTriggerPosition(boolean full_auto){
   // globals:
-  // int trigger_reading;
-  // int last_trigger_reading = -1;
-  // uint8_t trigger_value
+  //   trigger_position - current trigger position
+  //   last_trigger_position
+  //   new_trigger_pull
+  uint8_t retVal = 0;
+  if (new_trigger_pull){
+    retVal = trigger_position;
+
+    if (full_auto){
+    //  new_trigger_pull =  false;
+    last_trigger_position = 0;
+    }
+    new_trigger_pull = false;
+    dprint(F("GetTriggerPosition: "));
+    dprintln(retVal);
+  }
 
   return retVal;
-
-}
-
-void ClearTriggerState(){
-// Call to clear the "changed" state of a trigger
-  last_trigger_reading = trigger_reading;
 }

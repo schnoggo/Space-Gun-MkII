@@ -96,7 +96,8 @@ void SetNewMode(byte new_mode){
   // globals:
   // selected_mode - currently selected mode in config mode
   // prev_mode - the previous, duh
-  dprint("new mode: ");
+
+  dprint("set new mode: ");
   dprintln(new_mode);
   prev_mode = current_mode;
   current_mode = new_mode;
