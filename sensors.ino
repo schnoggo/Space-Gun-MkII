@@ -243,10 +243,11 @@ boolean UpdateTriggerState(){
   if (trigger_timer < now ){
 
     int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
-     // dprintln(temp_trigger);
+
 
     temp_trigger = temp_trigger/(TRIGGER_RANGE);
     if (temp_trigger !=  trigger_reading){
+    //   dprintln(temp_trigger);
       last_trigger_reading = trigger_reading;
       trigger_reading = temp_trigger;
 
@@ -261,4 +262,9 @@ boolean UpdateTriggerState(){
 
   return retVal;
 
+}
+
+void ClearTriggerState(){
+// Call to clear the "changed" state of a trigger
+  last_trigger_reading = trigger_reading;
 }

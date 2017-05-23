@@ -22,10 +22,11 @@
 #define MODE_CONFIG	   0
 #define MODE_LON01     1
 #define MODE_STAR_WARS 2
-#define MODE_TREK      3
+#define MODE_TREK_TOS      3
 #define MODE_DEMO      4
 #define MODE_DIAMOND   5
 #define MODE_NRG_BLADE 6
+#define MODE_TREK_TNG 7
 
 
 
@@ -155,9 +156,14 @@ AnimTimer anim_timers[5];
 #define A_CONFIG 4
 #define PULSE_BLAST 5
 #define A_SOUNDBOARD 6
+#define A_TOS_01 6
+#define A_TOS_02 6
+#define A_TOS_03 6
+
 #define NO_ANIM 0xff
 
-AnimGroup animations[7]{
+
+AnimGroup animations[10]{
   // ring  anim ID, // sound  #,// white  ID, 14-segment
   { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW,     ANIM14_RAND,    ANIM_NOSE_DEMO}, // A_DEMO
   { ANIM_RING_FIRE_LOW,      01 ,  ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // A_BLASTER1 (SW)_
@@ -165,7 +171,12 @@ AnimGroup animations[7]{
   { ANIM_RING_FIRE_HI,       03,   ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // A_BLASTER3
   { ANIM_RING_DEMO,          SND_NONE, ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // A_CONFIG
   { ANIM_RING_F2BWIDE,       03,   ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // PULSE_BLAST
-  { ANIM_RING_SOUNDBOARD,    0xff, ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO}
+  { ANIM_RING_SOUNDBOARD,    0xff, ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO},
+  { ANIM_RING_FIRE_LOW,       SND_TOS_01,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // Trek TOS 01
+  { ANIM_RING_FIRE_HI,       SND_TOS_02,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO}, // Trek TOS 02
+  { ANIM_RING_BACK_TO_FRONT,       SND_TOS_03,   ANIM_WHITE_PULSE, ANIM14_MSG, ANIM_NOSE_DEMO} // Trek TOS 03
+
+
 //  { 0xff, 03, ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG} // PULSE_BLAST
 };
 
@@ -259,15 +270,25 @@ void ServiceSensors(){
 
     case MODE_LON01:
     case MODE_STAR_WARS:
-    case MODE_TREK:
+    case MODE_TREK_TOS:
       switch(current_orientation){
         case ORIENT_FORWARD:
-          if (trigger_change && (02 == trigger_reading) && ( false == IsFXPlaying()) ){
+            if (trigger_change && ( false == IsFXPlaying() )){
+                switch(trigger_reading){
+                    case 1:
+                    case 2:
+                    PlayAnimation(GetGunAnimation(current_mode, trigger_reading));
+                    break;
 
-          //  PlayAnimation(A_BLASTER1);
-          PlayAnimation(GetGunAnimation(current_mode));
+                }
+            }
+
+         case ORIENT_TIP_IN:
+         case ORIENT_TIP_OUT:
+           if (trigger_change && ( false == IsFXPlaying() )){
+              PlayAnimation(GetGunAnimation(current_mode, 3));
           }
-          break;
+         break;
 
          case ORIENT_GROUND:
            if (trigger_change && (02 == trigger_reading) ){
@@ -279,7 +300,8 @@ void ServiceSensors(){
 
 
        }
-        break; //MODE_LON01, MODE_TREK, MODE_STAR_WARS
+        break; //MODE_LON01, MODE_TREK_TOS, MODE_STAR_WARS
+    case MODE_TREK_TNG:
 
     case MODE_DEMO:
     // to exit demo, aim at sky and pull trigger
@@ -334,7 +356,7 @@ void ServiceSensors(){
 
   }
 
-uint8_t GetGunAnimation(byte which_mode){
+uint8_t GetGunAnimation(byte which_mode, byte gun_index){
   //Inputs:
   // current global mode
   //
@@ -345,16 +367,18 @@ uint8_t GetGunAnimation(byte which_mode){
   switch(which_mode){
     case MODE_LON01:
     //  retVal = A_BLASTER3;
-    retVal = PULSE_BLAST;
+  //  retVal = PULSE_BLAST;
+    retVal = A_TOS_01 - 1 + gun_index;
     break;
 
     case MODE_STAR_WARS:
-      retVal = A_BLASTER1;
+    //  retVal = A_BLASTER1;
+    retVal = A_TOS_01 - 1 + gun_index;
     break;
 
-    case MODE_TREK:
-
-      retVal = A_BLASTER2;
+    case MODE_TREK_TOS:
+    retVal = A_TOS_01 - 1 + gun_index;
+  //    retVal = A_BLASTER2;
 
     break;
 
