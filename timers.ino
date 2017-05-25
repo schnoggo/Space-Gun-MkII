@@ -98,7 +98,8 @@ void SetNewMode(byte new_mode){
   // prev_mode - the previous, duh
 
   dprint("set new mode: ");
-  dprintln(new_mode);
+//  dprintln(new_mode);
+  dprintln(mode_names[new_mode]);
   prev_mode = current_mode;
   current_mode = new_mode;
 

@@ -29,6 +29,18 @@
 #define MODE_TREK_TNG 7
 
 
+char* mode_names[] = {
+  "CONIG   ",
+  "DEFAULT   ",
+  "STAR WARS   ",
+  "TREK-TOS   ",
+  "DEMO POSITION    ",
+  "DIAMOND   ",
+  "SABER   ",
+  "TREK-TNG   "
+};
+
+
 
 #define ANIM_RING_DEMO 0
 #define ANIM_RING_STANDBY 1
@@ -259,26 +271,34 @@ void ServiceSensors(){
   if (orientation_changed){
     PrintOrientation();
   }
-  if ( 0 < trigger ){
+
 
   switch (current_mode) {
 
       case MODE_CONFIG:
-        switch (current_orientation){
+        if ( 0 < trigger ){
+          switch (current_orientation){
 
-          case ORIENT_GROUND:
-            SetNewMode(selected_mode); // Exit config and go to new mode
-          break;
+            case ORIENT_GROUND:
+              SetNewMode(selected_mode); // Exit config and go to new mode
+            break;
 
-          case ORIENT_FORWARD:
-            selected_mode++;
-            if (selected_mode > MODE_TREK_TNG) {selected_mode = MODE_LON01;}
-            dprint(F("config:selected_mode: "));
-            dprintln(selected_mode);
-            SetSeg14Value(selected_mode);
-            //  PlayAnimation(A_CONFIG);
-            StartSeg14Animation(ANIM14_NUM);
-          break;
+            case ORIENT_TIP_IN:
+            case ORIENT_TIP_OUT:
+            case ORIENT_FORWARD:
+              selected_mode++;
+              if (selected_mode > MODE_TREK_TNG) {selected_mode = MODE_LON01;}
+              dprint(F("config:selected_mode: "));
+              dprintln(selected_mode);
+            //  SetSeg14Value(selected_mode);
+          SetSeg14Msg(mode_names[selected_mode]);
+
+
+              //  PlayAnimation(A_CONFIG);
+            //  StartSeg14Animation(ANIM14_NUM);
+          StartSeg14Animation(ANIM14_MSG);
+            break;
+          }
         }
     break;
 
@@ -287,27 +307,29 @@ void ServiceSensors(){
     case MODE_STAR_WARS:
     case MODE_TREK_TNG:
     case MODE_TREK_TOS:
-      switch(current_orientation){
-        case ORIENT_FORWARD:
-          if (false == IsFXPlaying()){
-            PlayAnimation(GetGunAnimation(current_mode, trigger));
+      if ( 0 < trigger ){
+        switch(current_orientation){
+          case ORIENT_FORWARD:
+            if (false == IsFXPlaying()){
+              PlayAnimation(GetGunAnimation(current_mode, trigger));
+            }
+          break;
+
+         case ORIENT_TIP_IN:
+         case ORIENT_TIP_OUT:
+           if (false == IsFXPlaying() ){
+              PlayAnimation(GetGunAnimation(current_mode, 3));
           }
-        break;
+         break;
 
-       case ORIENT_TIP_IN:
-       case ORIENT_TIP_OUT:
-         if (false == IsFXPlaying() ){
-            PlayAnimation(GetGunAnimation(current_mode, 3));
-        }
-       break;
+         case ORIENT_GROUND:
+           if ( 02 == trigger){
+            SetNewMode(MODE_CONFIG); // aim at ground pull trigger to enter config
+           }
+         break;
 
-       case ORIENT_GROUND:
-         if ( 02 == trigger){
-          SetNewMode(MODE_CONFIG); // aim at ground pull trigger to enter config
          }
-       break;
-
-       }
+     }
     break; //MODE_LON01, MODE_TREK_TOS, MODE_STAR_WARS, MODE_TREK_TNG
 
 
@@ -317,13 +339,15 @@ void ServiceSensors(){
         StartRingAnimation(ANIM_RING_DEMO);
       }
 
-      if( ORIENT_SKY == current_orientation){
-        SetNewMode(MODE_LON01);
+      if( ORIENT_GROUND == current_orientation){
+        if ( 0 < trigger ){
+          SetNewMode(MODE_LON01);
+        }
       }
     break;
 
     case MODE_DIAMOND:
-      if ( (02 == trigger) ){
+      if ( (0 < trigger) ){
           //  PlayAnimation(A_BLASTER1);
         //  PlayAnimation(GetGunAnimation(current_mode));
 
@@ -352,13 +376,17 @@ void ServiceSensors(){
             InteruptAudioFX(16);
           break;
 
+          case ORIENT_GROUND:
+             SetNewMode(MODE_CONFIG); // aim at ground pull trigger to enter config
+          break;
+
         }
 
       }
     break; // MODE_DIAMOND
 
     }
-  }
+
 }
 
 uint8_t GetGunAnimation(byte which_mode, byte gun_index){

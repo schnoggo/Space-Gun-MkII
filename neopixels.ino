@@ -18,6 +18,8 @@ void StartRingAnimation(byte anim_num){
   // inputs:
   // anim_num which animation to play
 
+  dprint(F("StartRingAnimation "));
+  dprintln(anim_num);
 // locals:
   int red;
   int green;
