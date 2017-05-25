@@ -82,7 +82,7 @@ void StartRingAnimation(byte anim_num){
   case ANIM_RING_FLASH_SLOW:
   case ANIM_RING_PULSE_SLOW:
   case ANIM_RING_PULSE_MED:
-  case ANIM_RING_FIRE_HI:
+  case ANIM_RING_FLASH_FAST:
   case ANIM_RING_SOUNDBOARD:
 
     ring_anim_color = strip.Color(0, 0 , 0);
@@ -270,6 +270,7 @@ anim_timers[this_timer].frame = 0;
         break;
 
         // "flashes" are ramp up then black
+        case ANIM_RING_FLASH_FAST:
         case ANIM_RING_FLASH_SLOW:
         case ANIM_RING_FLASH_MED:
 
@@ -281,6 +282,10 @@ anim_timers[this_timer].frame = 0;
             case ANIM_RING_FLASH_MED:
               flash_step_size = 15;
               flash_total_steps = 12;
+            break;
+            case ANIM_RING_FLASH_FAST:
+              flash_step_size = (252/9);
+              flash_total_steps = 9;
             break;
           }
 
@@ -296,14 +301,7 @@ anim_timers[this_timer].frame = 0;
             RingSolid(0);
             SetTimer( RINGS, 30000);
           }
-        break;
-
-
-        case ANIM_RING_FIRE_HI:
-          ring_anim_color = strip.Color(128,128,128);
-          neopixel_dirty = true;
-          SetTimer( RINGS, 3000);
-        break;
+        break; // FLASHES cases
 
       }
 
