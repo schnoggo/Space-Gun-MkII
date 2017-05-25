@@ -78,9 +78,13 @@ void StartRingAnimation(byte anim_num){
   break;
 
 
-  case ANIM_RING_FIRE_LOW:
+  case ANIM_RING_FLASH_MED:
+  case ANIM_RING_FLASH_SLOW:
+  case ANIM_RING_PULSE_SLOW:
+  case ANIM_RING_PULSE_MED:
   case ANIM_RING_FIRE_HI:
   case ANIM_RING_SOUNDBOARD:
+
     ring_anim_color = strip.Color(0, 0 , 0);
     anim_timers[RINGS].anim_id = anim_num;
     RingSolid(ring_anim_color);
@@ -112,6 +116,9 @@ anim_timers[this_timer].frame = 0;
   byte pixel_index;
   uint8_t strip_pos;
   unsigned int this_frame;
+  int flash_step_size = 0;
+  int calculated_white = 0;
+  uint8_t flash_total_steps = 0;
 
   #ifdef USE_NEOPIXEL
 
@@ -211,16 +218,80 @@ anim_timers[this_timer].frame = 0;
           SetTimer( RINGS, 3000);
         break;
 
+        // "pulses" are ramp up, ramp down (always up then down)
+        case ANIM_RING_PULSE_SLOW:
+        case ANIM_RING_PULSE_MED:
+            switch(anim_timers[RINGS].anim_id) {
+            case ANIM_RING_PULSE_SLOW:
+              flash_step_size = 8;
+              flash_total_steps = 28;
+            break;
 
-        case ANIM_RING_FIRE_LOW:
+            case ANIM_RING_PULSE_MED:
+              flash_step_size = 15;
+              flash_total_steps = 12;
+            break;
+          }
+      // shared code for pulse
         this_frame = GetTimerFrame(RINGS); //int
+        if (this_frame <flash_total_steps){
+          // ramp up:
+          calculated_white = (this_frame+2)*flash_step_size;
+          dprint(F("frame: "));
+          dprint(this_frame);
+          dprint(F(" Ramp up: "));
+          dprintln(calculated_white);
 
-          ring_anim_color = strip.Color((this_frame+2)*15,(this_frame+2)*15,(this_frame+2)*15);
+          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
           RingSolid(ring_anim_color);
           neopixel_dirty = true;
-          if (this_frame <12){
+          SetTimer( RINGS, 25);
+        } else {
+          // ramp down:
+          calculated_white = (flash_total_steps-(this_frame-flash_total_steps))*flash_step_size;
+          if (calculated_white > 0 ) {
+            // not faded out yet:
+            dprint(F("Ramp down: "));
+            dprintln(calculated_white);
+            ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+            RingSolid(ring_anim_color);
+            neopixel_dirty = true;
+            SetTimer( RINGS, 40);
+          } else {
+            // animation has completed
+            dprintln(F("Pulse end"));
+            RingSolid(0);
+            neopixel_dirty = true;
+            SetTimer( RINGS, 30000);
+          }
+
+        }
+          AdvanceTimerFrame(RINGS);
+        break;
+
+        // "flashes" are ramp up then black
+        case ANIM_RING_FLASH_SLOW:
+        case ANIM_RING_FLASH_MED:
+
+          switch(anim_timers[RINGS].anim_id){
+            case ANIM_RING_FLASH_SLOW:
+              flash_step_size = 8;
+              flash_total_steps = 28;
+            break;
+            case ANIM_RING_FLASH_MED:
+              flash_step_size = 15;
+              flash_total_steps = 12;
+            break;
+          }
+
+        this_frame = GetTimerFrame(RINGS); //int
+
+          ring_anim_color = strip.Color((this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size);
+          RingSolid(ring_anim_color);
+          neopixel_dirty = true;
+          if (this_frame <flash_total_steps){
             AdvanceTimerFrame(RINGS);
-            SetTimer( RINGS, 15);
+            SetTimer( RINGS, 25);
           } else {
             RingSolid(0);
             SetTimer( RINGS, 30000);
@@ -233,12 +304,7 @@ anim_timers[this_timer].frame = 0;
           neopixel_dirty = true;
           SetTimer( RINGS, 3000);
         break;
-/*
 
-
-      #define ANIM_RING_FIRE_LOW 2
-      #define ANIM_RING_FIRE_HI 3
-*/
       }
 
     }
@@ -263,7 +329,8 @@ void StartWhiteAnimation(byte anim_num){
       break;
       case ANIM_WHITE_RANDOGLOW:
         for( i=0; i<9; i++ ) {
-          white_pixel_colors[i] = 20; //random(255);
+          // white_pixel_colors is array of all white pixels x pixel color width (3) = 9 bytes
+          white_pixel_colors[i] = random(30);
         }
 
       break;
@@ -328,10 +395,12 @@ byte AnimateWhite(  unsigned long now){
       break;
 
       case ANIM_WHITE_RANDOGLOW:
-       for( i=0; i<3; i++ ) {
-        for( j=0; j<3; j++){
+       for( i=0; i<3; i++ ) { // step through pixels
+        for( j=0; j<3; j++){ // step though colors (WWW, not RGB)
           k = (i*3)+j;
            rand_step =  2 - random(5);
+           rand_step =  rand_step * 5;
+
              brightness = (int)white_pixel_colors[k] + rand_step;
               if (brightness > MAX_WHITE_GLOW){
                brightness = MAX_WHITE_GLOW;
