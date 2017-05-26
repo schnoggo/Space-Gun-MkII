@@ -255,7 +255,7 @@ void UpdateTriggerState(){
     if (temp_trigger < 100 ){
       temp_trigger = 0;
     } else {
-      if ( temp_trigger < 825 ){
+      if ( temp_trigger < 785 ){
           temp_trigger = 1;
       } else {
         temp_trigger = 2;

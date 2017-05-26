@@ -351,11 +351,15 @@ byte AnimateWhite(  unsigned long now){
   int rand_step;
   int brightness; // signed
   uint8_t i, j, k;
+  int flash_step_size = 0;
+  int flash_total_steps = 0;
+  int calculated_white = 0;
+
   #ifdef USE_NEOPIXEL
   if (TimerUp(WHITE_PIX, now)){
     this_frame = GetTimerFrame(WHITE_PIX); //int
     switch(anim_timers[WHITE_PIX].anim_id){
-      case ANIM_WHITE_PULSE:
+      case ANIM_WHITE_BLINK:
         if ( this_frame % 2 == 0 ){
             white_anim_color =  strip.Color(00, 15, 0);
         } else {
@@ -391,6 +395,72 @@ byte AnimateWhite(  unsigned long now){
 
         }
       break;
+
+      case ANIM_WHITE_PULSE_FAST:
+
+      flash_step_size = 15;
+      flash_total_steps = 10;
+      this_frame = GetTimerFrame(WHITE_PIX); //int
+      if (this_frame <flash_total_steps){
+        // ramp up:
+        calculated_white = (this_frame)*flash_step_size;
+        ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+        WhiteSolid(ring_anim_color);
+        neopixel_dirty = true;
+        SetTimer( WHITE_PIX, 40);
+      } else {
+        // ramp down:
+        flash_step_size = flash_step_size * 2;
+        calculated_white = (flash_total_steps-(this_frame-flash_total_steps))*flash_step_size;
+        if (calculated_white > 0 ) {
+          // not faded out yet:
+          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+          WhiteSolid(ring_anim_color);
+          neopixel_dirty = true;
+          SetTimer( WHITE_PIX, 20);
+        } else {
+          // animation has completed
+          WhiteSolid(0);
+          neopixel_dirty = true;
+          SetTimer( WHITE_PIX, 30000);
+        }
+  }
+  AdvanceTimerFrame(WHITE_PIX);
+
+  break;
+
+
+
+      case ANIM_WHITE_PULSE:
+        flash_step_size = 15;
+        flash_total_steps = 10;
+        this_frame = GetTimerFrame(WHITE_PIX); //int
+        if (this_frame <flash_total_steps){
+          // ramp up:
+          calculated_white = (this_frame)*flash_step_size;
+          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+          WhiteSolid(ring_anim_color);
+          neopixel_dirty = true;
+          SetTimer( WHITE_PIX, 40);
+        } else {
+          // ramp down:
+          calculated_white = (flash_total_steps-(this_frame-flash_total_steps))*flash_step_size;
+          if (calculated_white > 0 ) {
+            // not faded out yet:
+            ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+            WhiteSolid(ring_anim_color);
+            neopixel_dirty = true;
+            SetTimer( WHITE_PIX, 20);
+          } else {
+            // animation has completed
+            WhiteSolid(0);
+            neopixel_dirty = true;
+            SetTimer( WHITE_PIX, 30000);
+          }
+    }
+    AdvanceTimerFrame(WHITE_PIX);
+
+    break;
 
       case ANIM_WHITE_RANDOGLOW:
        for( i=0; i<3; i++ ) { // step through pixels
