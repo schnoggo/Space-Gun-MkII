@@ -250,7 +250,20 @@ void UpdateTriggerState(){
   if (trigger_timer < now ){
 
     int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
-    temp_trigger = temp_trigger/(TRIGGER_RANGE); // reduce to position
+    //temp_trigger = temp_trigger/(TRIGGER_RANGE); // reduce to position
+    // convert full 0 - 1023 to [ 0 | 1 | 2]
+    if (temp_trigger < 100 ){
+      temp_trigger = 0;
+    } else {
+      if ( temp_trigger < 825 ){
+          temp_trigger = 1;
+      } else {
+        temp_trigger = 2;
+      }
+    }
+
+
+
     if (temp_trigger !=  trigger_position){
         dprint("trigger: ");
         dprintln(temp_trigger);
