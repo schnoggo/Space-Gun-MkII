@@ -252,10 +252,12 @@ void UpdateTriggerState(){
     int temp_trigger = analogRead(TRIGGER_PIN); // might be bouncing
     //temp_trigger = temp_trigger/(TRIGGER_RANGE); // reduce to position
     // convert full 0 - 1023 to [ 0 | 1 | 2]
-    if (temp_trigger < 100 ){
+
+    
+    if (temp_trigger < 600 ){ // defauilt 100
       temp_trigger = 0;
     } else {
-      if ( temp_trigger < 785 ){
+      if ( temp_trigger < 900  ){ // 768 for real sensor. 400 for switch
           temp_trigger = 1;
       } else {
         temp_trigger = 2;

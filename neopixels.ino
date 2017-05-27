@@ -77,14 +77,16 @@ void StartRingAnimation(byte anim_num){
     SetTimer( RINGS, 170);
   break;
 
-
+  default:
+  /*
+  case ANIM_RING_SPARKLE:
   case ANIM_RING_FLASH_MED:
   case ANIM_RING_FLASH_SLOW:
   case ANIM_RING_PULSE_SLOW:
   case ANIM_RING_PULSE_MED:
   case ANIM_RING_FLASH_FAST:
   case ANIM_RING_SOUNDBOARD:
-
+*/
     ring_anim_color = strip.Color(0, 0 , 0);
     anim_timers[RINGS].anim_id = anim_num;
     RingSolid(ring_anim_color);
@@ -125,14 +127,56 @@ anim_timers[this_timer].frame = 0;
     if (TimerUp(RINGS, now)){
       this_frame = GetTimerFrame(RINGS); //int
       switch(anim_timers[RINGS].anim_id){
+
         case ANIM_RING_STANDBY:
           for(pixel_index = RING_START; pixel_index <= RING_END;  pixel_index++) {
             strip.setPixelColor(pixel_index, Wheel((pixel_index+ ( this_frame % 255) ) & 255));
           }
           neopixel_dirty = true;
-           SetTimer( RINGS, 30);
+          SetTimer( RINGS, 30);
           AdvanceTimerFrame(RINGS);
         break;
+
+        case ANIM_RING_SPARKLE:
+          flash_total_steps = 20;
+          if (this_frame <flash_total_steps){
+            for( pixel_index = RING_START; pixel_index <=RING_END; pixel_index++) {
+                if ( 0 == random(5)) { // chance of lighting a pixel
+                    strip.setPixelColor(
+                    pixel_index, strip.Color( (random(255)), ( random(255)), (random(255)) )
+                  );
+
+                } else { // othwise it is dark
+                  strip.setPixelColor(pixel_index, strip.Color(0,0,0));
+                }
+            }
+            neopixel_dirty = true;
+            SetTimer( RINGS, 40);
+            AdvanceTimerFrame(RINGS);
+          } else {
+            RingSolid(0);
+            neopixel_dirty = true;
+            SetTimer( RINGS, 3000);
+
+          }
+
+        break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         case ANIM_RING_BACK_TO_FRONT:
 
