@@ -232,7 +232,7 @@ void PrintOrientation(){
 void InitTrigger(){
   // globals:
   trigger_position = 0;
-  last_trigger_position = -1;
+  new_trigger_pull = 0;
 
 }
 /*
@@ -243,7 +243,6 @@ void UpdateTriggerState(){
 // globals:
 //   trigger_timer - use to debounce the readings a little
 //   trigger_position - current trigger position
-//   last_trigger_position
 //   new_trigger_pull
   unsigned long now = millis();
   // maybe add a throttle?
@@ -253,11 +252,11 @@ void UpdateTriggerState(){
     //temp_trigger = temp_trigger/(TRIGGER_RANGE); // reduce to position
     // convert full 0 - 1023 to [ 0 | 1 | 2]
 
-    
-    if (temp_trigger < 600 ){ // defauilt 100
+
+    if (temp_trigger < 100 ){ //  100 for FSR // 600 for resistors/switches
       temp_trigger = 0;
     } else {
-      if ( temp_trigger < 900  ){ // 768 for real sensor. 400 for switch
+      if ( temp_trigger < 768  ){ // 768 for real sensor. 400 for switch
           temp_trigger = 1;
       } else {
         temp_trigger = 2;
@@ -275,7 +274,6 @@ void UpdateTriggerState(){
       } else {
         new_trigger_pull = false;
       }
-      last_trigger_position = trigger_position;
       trigger_position = temp_trigger;
     }
     trigger_timer =  now + TRIGGER_SAMPLE_RATE;
@@ -290,7 +288,6 @@ void UpdateTriggerState(){
 uint8_t GetTriggerPosition(boolean full_auto){
   // globals:
   //   trigger_position - current trigger position
-  //   last_trigger_position
   //   new_trigger_pull
   uint8_t retVal = 0;
   if (new_trigger_pull){
@@ -298,7 +295,7 @@ uint8_t GetTriggerPosition(boolean full_auto){
 
     if (full_auto){
     //  new_trigger_pull =  false;
-    last_trigger_position = 0;
+    //last_trigger_position = 0;
     }
     new_trigger_pull = false;
     dprint(F("GetTriggerPosition: "));

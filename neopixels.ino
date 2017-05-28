@@ -108,6 +108,7 @@ byte AnimateRings(  unsigned long now){
     anim_timers[RINGS].anim_id // W
     strip
     ring_anim_step
+    c - generic color object
 
     Return neopixel_dirty - neopixels have changed
       false - no changes made to neopixels
@@ -163,7 +164,35 @@ anim_timers[this_timer].frame = 0;
         break;
 
 
+        case ANIM_RING_SPINNER:
+        /*
+        dprint(F("frame: "));
+        dprint(this_frame);
+        */
+/*
+            RingSolid(0);
+            pixel_index =     this_frame  % RING_PIX_COUNT;
+            strip.setPixelColor(RING_START + NormalizeRingPos(pixel_index),  Wheel((pixel_index+ ( this_frame % 255) ) & 255));
 
+
+*/
+            pixel_index = this_frame  % RING_PIX_COUNT;
+
+            for( uint8_t i=0; i<RING_PIX_COUNT; i++) {
+              uint32_t c = 0; // turn off non-selected pixels
+             //if(((ring_pos + i) & 7) < 2) c = color; // 4 pixels on...
+             if (RingDelta(pixel_index,i)<2){
+               c = Wheel( this_frame % 255 );
+             }
+              strip.setPixelColor(  NormalizeRingPos(i + RING_OFFSET_LEFT), c); // left side
+              strip.setPixelColor(RING_PIX_COUNT + NormalizeRingPos(RING_PIX_COUNT - i + RING_OFFSET_RIGHT)  , c); // right eye
+            }
+
+            neopixel_dirty = true;
+            SetTimer( RINGS, 90);
+            AdvanceTimerFrame(RINGS);
+
+        break;
 
 
 
@@ -609,66 +638,6 @@ byte AnimateNose(  unsigned long now){
 
 }
 
-  /*
-      if (this_frame < 255){
-        white_anim_color =  strip.Color(this_frame, this_frame, this_frame);
-      } else {
-          white_anim_color =  strip.Color(511-this_frame, 511-this_frame, 511-this_frame);
-      }
-        neopixel_dirty =  true;
-        for(uint16_t i=WHITE_START; i<=WHITE_END; i++) {
-            strip.setPixelColor(i, white_anim_color);
-        }
-
-        if (this_frame < 512){
-          SetTimer( WHITE_PIX, 20);
-          AdvanceTimerFrame(WHITE_PIX);
-        } else {
-          ResetAnimation(WHITE_PIX);
-        }
-  */
-
-
-/*
-   dprint(white_anim_step);
-    dprint(": ");
-        // spread possible values of 0 -768 across 3 pixels
-      for(byte i=0; i<3; i++) { // rgb
-        acc = white_anim_step/4;
-        byte d = white_anim_step%4;
-        if (i < d){
-          acc++;
-          dprintln();
-        }
-        white_rgb[i] = acc;
-       dprint(acc);
-        dprint(",  ");
-      }
-
-    //  c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2], white_rgb[3]);
-     // c = strip.Color(white_anim_step/3,0,0);
-    // acc = white_anim_step%255;
-       c = strip.Color(white_rgb[0],white_rgb[1], white_rgb[2]);
-      strip.setPixelColor(WHITE_START , c);
-      //strip.setPixelColor(WHITE_START -1 , c);
-      neopixel_dirty = true;
-
-
-
-      white_anim_step = white_anim_step + white_direction;
-      if (white_anim_step >= white_range){
-        white_anim_step = white_range;
-        white_direction = 0 - WHITE_ANIM_STEP_SIZE;
-      }
-
-      if (white_anim_step <= 0){
-        white_anim_step = 0;
-        white_direction = WHITE_ANIM_STEP_SIZE;
-      }
-
-
-    } // timer
-*/
 
 
 }
@@ -770,4 +739,15 @@ uint8_t NormalizeRingPos(uint8_t realPos){
   while (realPos < 0) { realPos += 16;}
   while (realPos > 15) { realPos -= 16; }
   return realPos;
+}
+
+
+int8_t RingDelta(uint8_t pointA, uint8_t point_B){
+  // return distance between 2 points on the ring
+  int8_t delta = abs(pointA - point_B);
+  if (delta > RING_PIX_COUNT/2){
+      delta = RING_PIX_COUNT -  delta;
+  }
+  return delta;
+
 }

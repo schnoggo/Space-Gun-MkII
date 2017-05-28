@@ -106,7 +106,9 @@ void SetNewMode(byte new_mode){
 
   switch (new_mode) {
     case MODE_CONFIG:
-    SetSeg14Value(selected_mode);
+  //  SetSeg14Value(selected_mode);
+      SetSeg14Msg(mode_names[selected_mode]);
+      StartSeg14Animation(ANIM14_MSG);
       PlayAnimation(A_CONFIG);
     break;
 

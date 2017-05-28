@@ -53,6 +53,7 @@ char* mode_names[] = {
 #define ANIM_RING_PULSE_SLOW 8
 #define ANIM_RING_PULSE_MED 9
 #define ANIM_RING_SPARKLE 10
+#define ANIM_RING_SPINNER 11
 
 
 
@@ -97,6 +98,7 @@ uint8_t neopixel_slices[15] = {
 
 #define RING_START 0 // first color neopixel in rings
 #define RING_END 23 // last color neopixel in rings
+#define RING_PIX_COUNT 12
 #define WHITE_START 24 // first white (W,W,W) Neopixel
 #define WHITE_END 29 // last white neopixel
 #define NOSE_START 30 //first RGB pixel in nose cone
@@ -126,7 +128,6 @@ uint8_t neopixel_slices[15] = {
 
 //Global vars:
 uint8_t trigger_position;
-uint8_t last_trigger_position = 0xff;
 boolean new_trigger_pull = false;
 unsigned long trigger_timer = 0;
 
@@ -195,7 +196,7 @@ AnimGroup animations[16]{
   { ANIM_RING_FLASH_MED,      01 ,        ANIM_WHITE_PULSE,     ANIM14_MSG,     ANIM_NOSE_DEMO},  // 01 A_BLASTER1 (SW)_
   { ANIM_RING_BACK_TO_FRONT, 02,         ANIM_WHITE_RANDOGLOW, ANIM14_DEMO,    ANIM_NOSE_DEMO},  // 02 A_BLASTER2
   { ANIM_RING_FLASH_FAST,       03,         ANIM_WHITE_PULSE,     ANIM14_RAND,   ANIM_NOSE_DEMO},  // 03 A_BLASTER3
-  { ANIM_RING_DEMO,          SND_NONE,   ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // 04  A_CONFIG
+  { ANIM_RING_SPINNER,          SND_NONE,   ANIM_WHITE_RANDOGLOW, ANIM14_NUM,    ANIM_NOSE_DEMO}, // 04  A_CONFIG
   { ANIM_RING_F2BWIDE,       03,         ANIM_WHITE_BACK_TO_FRONT, ANIM14_MSG, ANIM_NOSE_DEMO}, // 05 PULSE_BLAST
   { ANIM_RING_SOUNDBOARD,    SND_NONE,   ANIM_WHITE_RANDOGLOW,  0xff,          ANIM_NOSE_DEMO}, // 06 A_SOUNDBOARD
 
@@ -298,13 +299,8 @@ void ServiceSensors(){
               if (selected_mode > MODE_TREK_TNG) {selected_mode = MODE_LON01;}
               dprint(F("config:selected_mode: "));
               dprintln(selected_mode);
-            //  SetSeg14Value(selected_mode);
-          SetSeg14Msg(mode_names[selected_mode]);
-
-
-              //  PlayAnimation(A_CONFIG);
-            //  StartSeg14Animation(ANIM14_NUM);
-          StartSeg14Animation(ANIM14_MSG);
+              SetSeg14Msg(mode_names[selected_mode]);
+              StartSeg14Animation(ANIM14_MSG);
             break;
           }
         }

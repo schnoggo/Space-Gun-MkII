@@ -19,7 +19,11 @@ pinMode(AUDIO_SENSE, INPUT);
       dprint(F("SFX board found"));
 
     ListSFXFiles();
-  sfx.playTrack(F("START.OGG   "));
+  sfx.playTrack( (uint8_t)0);
+
+  while (IsFXPlaying()){
+      delay(20);
+  }
 
     }
 
