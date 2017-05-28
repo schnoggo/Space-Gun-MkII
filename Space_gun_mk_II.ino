@@ -289,7 +289,9 @@ void ServiceSensors(){
           switch (current_orientation){
 
             case ORIENT_GROUND:
-              SetNewMode(selected_mode); // Exit config and go to new mode
+              if ( 1 < trigger){
+                SetNewMode(selected_mode); // Exit config and go to new mode
+              }
             break;
 
             case ORIENT_TIP_IN:

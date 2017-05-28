@@ -61,7 +61,7 @@ void StartRingAnimation(byte anim_num){
          red = 10 ; green = 10; blue = 10;
 
        }
-         ring_anim_color = strip.Color(red, green, blue);
+         ring_anim_color = strip.Color(red, green, blue); // global animation color
         // RingSolid(ring_anim_color); // actually handled in the animation section
        break;
     break;
@@ -87,9 +87,10 @@ void StartRingAnimation(byte anim_num){
   case ANIM_RING_FLASH_FAST:
   case ANIM_RING_SOUNDBOARD:
 */
-    ring_anim_color = strip.Color(0, 0 , 0);
+  //  ring_anim_color = strip.Color(0, 0 , 0);
     anim_timers[RINGS].anim_id = anim_num;
-    RingSolid(ring_anim_color);
+//    RingSolid(ring_anim_color);
+    RingSolid(0);
     UpdateNeopixels(true);
   break;
 
@@ -109,7 +110,7 @@ byte AnimateRings(  unsigned long now){
     strip
     ring_anim_step
     c - generic color object
-
+    ring_anim_color -  global color for tinted animations
     Return neopixel_dirty - neopixels have changed
       false - no changes made to neopixels
 
@@ -122,6 +123,7 @@ anim_timers[this_timer].frame = 0;
   int flash_step_size = 0;
   int calculated_white = 0;
   uint8_t flash_total_steps = 0;
+  uint32_t temp_color = 0; // temporary calculate colors
 
   #ifdef USE_NEOPIXEL
 
@@ -169,13 +171,7 @@ anim_timers[this_timer].frame = 0;
         dprint(F("frame: "));
         dprint(this_frame);
         */
-/*
-            RingSolid(0);
-            pixel_index =     this_frame  % RING_PIX_COUNT;
-            strip.setPixelColor(RING_START + NormalizeRingPos(pixel_index),  Wheel((pixel_index+ ( this_frame % 255) ) & 255));
 
-
-*/
             pixel_index = this_frame  % RING_PIX_COUNT;
 
             for( uint8_t i=0; i<RING_PIX_COUNT; i++) {
@@ -315,8 +311,8 @@ anim_timers[this_timer].frame = 0;
           dprint(F(" Ramp up: "));
           dprintln(calculated_white);
 
-          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-          RingSolid(ring_anim_color);
+          temp_color = strip.Color(calculated_white,calculated_white,calculated_white);
+          RingSolid(temp_color);
           neopixel_dirty = true;
           SetTimer( RINGS, 25);
         } else {
@@ -326,8 +322,8 @@ anim_timers[this_timer].frame = 0;
             // not faded out yet:
             dprint(F("Ramp down: "));
             dprintln(calculated_white);
-            ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-            RingSolid(ring_anim_color);
+            temp_color = strip.Color(calculated_white,calculated_white,calculated_white);
+            RingSolid(temp_color);
             neopixel_dirty = true;
             SetTimer( RINGS, 40);
           } else {
@@ -364,8 +360,8 @@ anim_timers[this_timer].frame = 0;
 
         this_frame = GetTimerFrame(RINGS); //int
 
-          ring_anim_color = strip.Color((this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size);
-          RingSolid(ring_anim_color);
+          temp_color = strip.Color((this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size,(this_frame+2)*flash_step_size);
+          RingSolid(temp_color);
           neopixel_dirty = true;
           if (this_frame <flash_total_steps){
             AdvanceTimerFrame(RINGS);
@@ -436,7 +432,7 @@ byte AnimateWhite(  unsigned long now){
         if ( this_frame % 2 == 0 ){
             white_anim_color =  strip.Color(00, 15, 0);
         } else {
-              white_anim_color =  strip.Color(0, 0, 0);
+            white_anim_color =  strip.Color(0, 0, 0);
         }
         WhiteSolid(white_anim_color);
         neopixel_dirty =  true;
@@ -477,8 +473,8 @@ byte AnimateWhite(  unsigned long now){
       if (this_frame <flash_total_steps){
         // ramp up:
         calculated_white = (this_frame)*flash_step_size;
-        ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-        WhiteSolid(ring_anim_color);
+        white_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+        WhiteSolid(white_anim_color);
         neopixel_dirty = true;
         SetTimer( WHITE_PIX, 40);
       } else {
@@ -487,8 +483,8 @@ byte AnimateWhite(  unsigned long now){
         calculated_white = (flash_total_steps-(this_frame-flash_total_steps))*flash_step_size;
         if (calculated_white > 0 ) {
           // not faded out yet:
-          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-          WhiteSolid(ring_anim_color);
+          white_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+          WhiteSolid(white_anim_color);
           neopixel_dirty = true;
           SetTimer( WHITE_PIX, 20);
         } else {
@@ -511,8 +507,8 @@ byte AnimateWhite(  unsigned long now){
         if (this_frame <flash_total_steps){
           // ramp up:
           calculated_white = (this_frame)*flash_step_size;
-          ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-          WhiteSolid(ring_anim_color);
+          white_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+          WhiteSolid(white_anim_color);
           neopixel_dirty = true;
           SetTimer( WHITE_PIX, 40);
         } else {
@@ -520,8 +516,8 @@ byte AnimateWhite(  unsigned long now){
           calculated_white = (flash_total_steps-(this_frame-flash_total_steps))*flash_step_size;
           if (calculated_white > 0 ) {
             // not faded out yet:
-            ring_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
-            WhiteSolid(ring_anim_color);
+            white_anim_color = strip.Color(calculated_white,calculated_white,calculated_white);
+            WhiteSolid(white_anim_color);
             neopixel_dirty = true;
             SetTimer( WHITE_PIX, 20);
           } else {
